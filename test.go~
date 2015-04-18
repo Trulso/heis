@@ -1,0 +1,13 @@
+package main
+
+import (
+	. "fmt"
+	"runtime"
+	"time"
+	"driver"
+)
+
+func main(){
+	driver.Io_init()
+	driver.Io_set_bit(driver.LIGHT_COMMAND4)
+}
