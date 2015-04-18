@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
 	"./driver"
 )
 
@@ -17,10 +17,8 @@ const (
 func main(){
 	driver.HwInit()
 	
-	fmt.Printf("%d",A)
-	fmt.Printf("%d",B)
-	fmt.Printf("%d",C)
-	fmt.Printf("%d",D)
+	driver.SetButtonLed(3,driver.Down)
+	driver.SetFloorInd(1)
 	for {
 		if driver.Io_read_bit(driver.SENSOR_FLOOR4) == 1{
 			driver.Io_set_bit(driver.MOTORDIR)
