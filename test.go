@@ -17,16 +17,26 @@ const (
 func main(){
 	driver.HwInit()
 	
-	driver.SetButtonLed(3,driver.Down)
-	driver.SetFloorInd(1)
-	for {
-		if driver.Io_read_bit(driver.SENSOR_FLOOR4) == 1{
-			driver.Io_set_bit(driver.MOTORDIR)
-			driver.Io_write_analog(driver.MOTOR, 2800)
-		}
-		if driver.Io_read_bit(driver.SENSOR_FLOOR1) == 1{
-			driver.Io_clear_bit(driver.MOTORDIR)
-			driver.Io_write_analog(driver.MOTOR, 2800)
-		}		
+	BCmd := make(chan int)	
+	BUp  := make(chan int)
+	BDown:= make(chan int)
+
+	go driver.CommandOrdersPolling(BCmd)
+	go driver.DownOrdersPolling(BDown)
+	go driver.UpOrdersPolling(BUp)
+
+	for{
+		driver.SetButtonLed(<-BCmd,driver.Command)
+		//driver.SetButtonLed(<- BUp,driver.Up)
+		//fmt.Printf("%d",<- BUp)
+		//driver.SetButtonLed(<- BDown,driver.Down)
+
 	}
+
+
+
+
+
+
+
 }

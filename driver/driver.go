@@ -2,6 +2,7 @@ package driver
 
 import (
 	"fmt"
+	"time"
 )
 
 const (
@@ -104,7 +105,7 @@ func getUpOrdersSignal(floor int) int {
 func UpOrdersPolling(upOrdersChannel chan int) {
     var ButtonPressed [N_FLOORS-1]int
 	for {
-		for floor := 0; floor<N_FLOORS-2; floor++ {
+		for floor := 0; floor<N_FLOORS-1; floor++ {
 			if getUpOrdersSignal(floor) == 1 {
 				if ButtonPressed[floor] == 0 {
 					upOrdersChannel<-floor
@@ -116,6 +117,7 @@ func UpOrdersPolling(upOrdersChannel chan int) {
 				}
 			}
 		}
+		time.Sleep(1*time.Millisecond)
 	}
 }
 
@@ -134,7 +136,7 @@ func getDownOrdersSignal(floor int) int {
 func DownOrdersPolling(downOrdersChannel chan int) {
     var ButtonPressed [N_FLOORS-1]int
 	for {
-		for floor := 1; floor<N_FLOORS-1; floor++ {
+		for floor := 1; floor<N_FLOORS; floor++ {
 			if getDownOrdersSignal(floor) == 1 {
 				if ButtonPressed[floor-1] == 0 {
 					downOrdersChannel<-floor
@@ -146,6 +148,7 @@ func DownOrdersPolling(downOrdersChannel chan int) {
 				}
 			}
 		}
+		time.Sleep(1*time.Millisecond)
 	}
 }
 
@@ -166,7 +169,7 @@ func getCommandOrdersSignal(floor int) int {
 func CommandOrdersPolling(commandOrdersChannel chan int) {
     var ButtonPressed [N_FLOORS]int
 	for {
-		for floor := 0; floor<N_FLOORS-1; floor++ {
+		for floor := 0; floor<N_FLOORS; floor++ {
 			if getCommandOrdersSignal(floor) == 1 {
 				if ButtonPressed[floor] == 0 {
 					commandOrdersChannel<-floor
@@ -178,6 +181,7 @@ func CommandOrdersPolling(commandOrdersChannel chan int) {
 				}
 			}
 		}
+		time.Sleep(1*time.Millisecond)
 	}
 }
 
@@ -196,30 +200,31 @@ func SetFloorInd(floor int) {
 }
 
 func SetButtonLed(floor int,button int){
-
-	if button == Command {
-		Io_set_bit(LIGHT_COMMAND1-floor)
-	}
-	if button == Up {
-		if floor == 0 {
-			Io_set_bit(LIGHT_UP1)
+	if(floor<=N_FLOORS){
+		if button == Command {
+			Io_set_bit(LIGHT_COMMAND1-floor)
 		}
-		if floor == 1 {
-			Io_set_bit(LIGHT_UP2)
+		if button == Up {
+			if floor == 0 {
+				Io_set_bit(LIGHT_UP1)
+			}
+			if floor == 1 {
+				Io_set_bit(LIGHT_UP2)
+			}
+			if floor == 2 {
+				Io_set_bit(LIGHT_UP3)
+			}
 		}
-		if floor == 2 {
-			Io_set_bit(LIGHT_UP3)
-		}
-	}
-	if button == Down {
-		if floor == 1 {
-			Io_set_bit(LIGHT_DOWN2)
-		}
-		if floor == 2 {
-			Io_set_bit(LIGHT_DOWN3)
-		}
-		if floor == 3 {
-			Io_set_bit(LIGHT_DOWN4)
+		if button == Down {
+			if floor == 1 {
+				Io_set_bit(LIGHT_DOWN2)
+			}
+			if floor == 2 {
+				Io_set_bit(LIGHT_DOWN3)
+			}
+			if floor == 3 {
+				Io_set_bit(LIGHT_DOWN4)
+			}
 		}
 	}
 }
