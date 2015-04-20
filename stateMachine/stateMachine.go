@@ -42,11 +42,11 @@ func Init(FloorReached chan int, NewOrder chan int){
 	for {
 		select {
 		case floor := <-FloorReached:
-			switch (state){
+			driver.SerFloorIndicator(floor)
+			switch state {
 			case MOVING:
 				if queue.ShouldStop(floor) {
 					driver.SetMotorDir(0)
-
 					state = DOOR_OPEN
 				}
 			}

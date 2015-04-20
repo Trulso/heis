@@ -185,7 +185,7 @@ func CommandOrdersPolling(commandOrdersChannel chan int) {
 	}
 }
 
-func SetFloorInd(floor int) {
+func SetFloorIndicator(floor int) {
     if (floor & 0x02) != 0 {
         Io_set_bit(LIGHT_FLOOR_IND1)
     }else {
