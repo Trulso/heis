@@ -1,25 +1,25 @@
-package statemachine
+package stateMachine
 
-
-import(
+import (
+	"../queue"
 	"fmt"
-	//"../driver"
-	//"../queue"
 	"time"
+	io "../fakeDriver"
+	//io "../driver"
 )
 
-const (	
-	IDLE				= 0
-	DOOR_OPEN			= 1
-	MOVING				= 2
-	
-	UP 					= 1
-	DOWN 				= -1
-	STOP				= 0
+const (
+	IDLE      = 0
+	DOOR_OPEN = 1
+	MOVING    = 2
+
+	UP   = 1
+	DOWN = -1
+	STOP = 0
 )
+
 //state
 //
-
 
 /*Channels
 Floor
@@ -28,36 +28,36 @@ NewOrder
 
 */
 
-func Init(FloorReached chan int, NewOrder chan int){
+func Init(FloorReached chan int, NewOrder chan int) {
 	fmt.Printf("Initializing the state machine.\n")
 	state := IDLE
 
-	doorTimer := time.New_Timer(3*time.Seconds)
+	doorTimer := time.NewTimer(3 * time.Second)
 	doorTimer.Stop()
-
-
-
 
 	fmt.Printf("Initializing complete. Running state machine.\n")
 	for {
 		select {
+
 		case floor := <-FloorReached:
-			driver.SetFloorIndicator(floor)
+			io.SetFloorIndicator(floor)
 			switch state {
 			case MOVING:
 				if queue.ShouldStop(floor) {
-					driver.SetMotorDir(0)
+					io.SetMotorDir(0)
+					doorTimer.Reset(3 * time.Second)
 					state = DOOR_OPEN
+					queue.OrderCompleted(floor)
 				}
 			}
-		case  direction := <- NewOrder:
+		case direction := <-NewOrder:
 			switch state {
 			case IDLE:
 			}
-		case <- doorTimer.C:
+		case <-doorTimer.C:
 			switch state {
 			case DOOR_OPEN:
-				
+
 			}
 		}
 	}

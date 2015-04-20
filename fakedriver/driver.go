@@ -1,4 +1,4 @@
-package fakedriver
+package fakeDriver
 
 import (
 	"fmt"

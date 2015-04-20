@@ -1,8 +1,9 @@
 package queue
 
 import(
-	"fmt"
-	"../driver"
+	//"fmt"
+	//io "../driver"
+	//io "../fakeDriver"
 )
 
 //struct order
@@ -28,7 +29,7 @@ type Elevator struct {
 	state int
 	direction int
 	lastPassedFloor int
-	orders = [N_FLOORS]Order
+	orders [N_FLOORS]Order
 }
 
 type Order struct {
@@ -51,7 +52,7 @@ func Init(
 		commandOrderChan chan int,
 
 	){
-	elevators := []Elevator
+	elevators := []Elevator{}
 
 
 
@@ -60,7 +61,7 @@ func Init(
 		select {
 		case floor := <-upOrderChan:
 
-			cheapestElevator := costFunction()
+			cheapestElevator := costFunction(1, 1)
 
 		case floor := <-downOrderChan:
 
@@ -72,6 +73,8 @@ func Init(
 
 func costFunction(floor int, direction int) Elevator {
 	//TODO: Sette inn regnestykket.
+
+	return Elevator{1,1,1,1,{1}}
 }
 
 func ShouldStop(floor int) bool {
@@ -84,7 +87,8 @@ func RemoveElevator(Elevator){
 
 func AddElevator(newElevator Elevator){}
 
-func reDistributeOrdersFrom(removedElevator Elevator){
+func OrderCompleted(floor int){}
 
-}
+func removeOrder(elevator Elevator, floor int){}
 
+func reDistributeOrdersFrom(removedElevator Elevator){}
