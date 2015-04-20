@@ -1,7 +1,7 @@
 package main
 
 import (
-	//"fmt"
+	"fmt"
 	//"./driver"
 	"./network"
 )
@@ -20,13 +20,14 @@ func main(){
 	
 	test := make(chan network.Dummy)
 
-	test_struckt:= network.Dummy{"hallo"}
-	
-
-	test <- test_struckt
-
-	network.UDPSend(test,30000)
+	test_struckt:= network.Dummy{}
 
 
+	go network.UDPListen(test,30000)
+
+	for{
+		test_struckt <- test
+		fmt.Printf("test_struckt.s")
+	}
 
 }

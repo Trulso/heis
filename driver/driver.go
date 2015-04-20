@@ -204,6 +204,8 @@ func SetButtonLed(floor int,button int){
 		if button == Command {
 			Io_set_bit(LIGHT_COMMAND1-floor)
 		}
+	}
+	
 		if button == Up {
 			if floor == 0 {
 				Io_set_bit(LIGHT_UP1)
