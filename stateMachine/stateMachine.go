@@ -3,7 +3,7 @@ package statemachine
 
 import(
 	"fmt"
-	"../driver"
+	"../simdriver"
 	"../queue"
 	"time"
 )
@@ -42,7 +42,7 @@ func Init(FloorReached chan int, NewOrder chan int){
 	for {
 		select {
 		case floor := <-FloorReached:
-			driver.SerFloorIndicator(floor)
+			driver.SetFloorIndicator(floor)
 			switch state {
 			case MOVING:
 				if queue.ShouldStop(floor) {

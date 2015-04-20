@@ -3,7 +3,7 @@ package main
 
 import(
 	"fmt"
-	"./driver"
+	"./simdriver"
 	"./stateMachine"
 
 
@@ -11,5 +11,5 @@ import(
 )
 
 func main(){
-
+	
 }
