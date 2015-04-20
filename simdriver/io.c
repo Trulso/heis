@@ -16,28 +16,28 @@ int simulation_data_read(int channel);
 
 int io_init(ElevatorType type){
 
-    elevatorType = type;
+    // elevatorType = type;
     
-    switch(elevatorType){
-    case ET_comedi: {
-        int status = 0;
+    // switch(elevatorType){
+    // case ET_comedi: {
+    //     int status = 0;
 
-        it_g = comedi_open("/dev/comedi0");
+    //     it_g = comedi_open("/dev/comedi0");
       
-        if (it_g == NULL)
-            return 0;
+    //     if (it_g == NULL)
+    //         return 0;
 
-        for (int i = 0; i < 8; i++) {
-            status |= comedi_dio_config(it_g, PORT1, i,     COMEDI_INPUT);
-            status |= comedi_dio_config(it_g, PORT2, i,     COMEDI_OUTPUT);
-            status |= comedi_dio_config(it_g, PORT3, i+8,   COMEDI_OUTPUT);
-            status |= comedi_dio_config(it_g, PORT4, i+16,  COMEDI_INPUT);
-        }
+    //     for (int i = 0; i < 8; i++) {
+    //         status |= comedi_dio_config(it_g, PORT1, i,     COMEDI_INPUT);
+    //         status |= comedi_dio_config(it_g, PORT2, i,     COMEDI_OUTPUT);
+    //         status |= comedi_dio_config(it_g, PORT3, i+8,   COMEDI_OUTPUT);
+    //         status |= comedi_dio_config(it_g, PORT4, i+16,  COMEDI_INPUT);
+    //     }
 
-        return (status == 0);
-    }
+    //     return (status == 0);
+    // }
     
-    case ET_simulation:
+    //case ET_simulation:
         simulation_elevator_start();
         return 1;
         
