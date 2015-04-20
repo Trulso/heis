@@ -3,8 +3,8 @@ package statemachine
 
 import(
 	"fmt"
-	"../simdriver"
-	"../queue"
+	//"../driver"
+	//"../queue"
 	"time"
 )
 
