@@ -3,19 +3,33 @@ package network
 import (
 	"fmt"
 	"net"
-	"encoding/json"
+	//"encoding/json"
+	"time"
 )
 
 
-type ElevatorInfo struct { // not done. 
-       s int
-       b int 
+
+type ElevatorInfo struct {
+		Id int
+		Tx string
 }
 
 
+func UDPDial(port int) *net.UDPConn {
 
-func UDPListen(rx chan ElevatorInfo ,port int){
-	var temp_struct info
+	casting,error:= net.ResolveUDPAddr("udp",fmt.Sprintf("255.255.255.255:%d", port)) 
+	if error !=nil{
+		fmt.Println("error:", error)	
+	}
+	socket,error:=net.DialUDP("udp",nil,casting)
+	if error !=nil{
+		fmt.Println("error:", error)
+	}
+	return socket
+}
+
+
+func UDPListen(port int) *net.UDPConn {
 	local,error:= net.ResolveUDPAddr("udp",fmt.Sprintf(":%d", port)) 
 	if error !=nil{
 		fmt.Println("error:", error)		
@@ -24,46 +38,63 @@ func UDPListen(rx chan ElevatorInfo ,port int){
 
 	socket,error:=net.ListenUDP("udp",local)
 	if error !=nil{
-		ffmt.Println("error:", error)
-		
+		fmt.Println("error:", error)	
 	}
-	socket.SetReadDeadline(time.Now().Add(10*time.Second)) //ingen aktivitet på net i løpet av 10s, noe er feil ?=
+	return socket
+}
+
+
+func UDPRx(rx chan []byte ,port int){
+	
+	socket := UDPListen(port)
 
 	for{
+		socket.SetReadDeadline(time.Now().Add(10*time.Second)) //ingen aktivitet på net i løpet av 10s, noe er feil ?=
 		buffer := make([]byte,1024)
 		n,_,error := socket.ReadFromUDP(buffer) 
+		
 		if error !=nil{
-			fmt.Println("error:", error)
-			//Mulig status chan
+			fmt.Println("error:", error)		
 		}
-
-		error = json.Unmarshal(buffer[:n], &temp_struct)
-		if error != nil {
-			fmt.Println("error:", error)
-		}
-		rx <- temp_struct
-		//Mulig status chan
+		
+		buffer = buffer[:n]
+		rx <- buffer
 	}
 
 }
 
-func UDPSend(tx chan ElevatorInfo ,port int)  {
+func UDPTx(tx chan []byte,port int)  {
+	
+	socket := UDPDial(port)
 
-	casting,error:= net.ResolveUDPAddr("udp",fmt.Sprintf("255.255.255.255:%d", port)) 
-	if error !=nil{
-		fmt.Println("error:", error)	
-	}
-	socket,error:=net.DialUDP("udp",nil,casting)
-	if error !=nil{
-		fmt.Println("error:", error)	
-	}
-	socket.SetWriteDeadline(time.Now().Add(10*time.Second))
 	for{
-		buffer := <- tx
-		un_buffer,_ := json.Marshal(buffer)
-		_,error = socket.Write(un_buffer)
+		socket.SetWriteDeadline(time.Now().Add(10*time.Second))
+		_,error := socket.Write(<- tx)
 		if error !=nil{
 			fmt.Println("error:", error)
 		}
 	}
+}
+
+func HeartMonitor() {
+
+	//un_buffer,_ := json.Marshal(buffer)
+
+
+	//error = json.Unmarshal(buffer[:n], &temp_struct)
+	//if error != nil {
+	//	fmt.Println("error:", error)
+	//}
+
+}
+
+func StatusMonitor(){
+
+
+
+}
+
+func AcknowledgeMonitor(){
+
+
 }
