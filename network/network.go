@@ -46,7 +46,7 @@ func GetIP() string {
 
 func UDPDial(port int) *net.UDPConn {
 
-	casting,error:= net.ResolveUDPAddr("udp",fmt.Sprintf("255.255.255.255:%d", port)) 
+	casting,error:= net.ResolveUDPAddr("udp",fmt.Sprintf("129.241.187.255:%d", port)) 
 	if error !=nil{
 		fmt.Println("error:", error)	
 	}
@@ -102,7 +102,8 @@ func UDPTx(tx chan []byte,port int)  {
 		if error !=nil{
 			fmt.Println("error:", error)
 		}
-	}
+		time.Sleep(100000000*time.Millisecond)	
+	}	
 }
 
 
@@ -126,18 +127,22 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 	 	
 	 	send <- myBeatBs
 	 	otherBeatBs := <-receive
-
+	 	
 	 	otherBeat := Heartbeat{}
-
-	 	json.Unmarshal(otherBeatBs,otherBeat)
-
+	 	error = json.Unmarshal(otherBeatBs,&otherBeat)
+		if error !=nil{
+			fmt.Println("error:", error)
+		}
+		fmt.Println(otherBeat.Id)
 		_,ok := heartbeats[otherBeat.Id]
 		
 		if ok {
 			heartbeats[otherBeat.Id] = otherBeat.Time
 		}else{
 			//Varsle om ny heis
+			fmt.Println("Rett før channel")
 			newElevator <- otherBeat.Id
+			fmt.Println("Rett etter channel")
 			heartbeats[otherBeat.Id] = otherBeat.Time 
 		}
 
@@ -150,6 +155,7 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 
 			}
 		}
+		time.Sleep(100000000*time.Nanosecond)
 	}
 }
 

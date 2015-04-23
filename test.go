@@ -3,7 +3,7 @@ package main
 import (
          "fmt"
          "./network"
-         ."time"
+         //"time"
  )
 
 func main() {
@@ -13,12 +13,16 @@ func main() {
 
 	go network.HeartMonitor(newEle,deadEle) 
 
+
 	for{
-		fmt.Println("Connected ", <-newEle)
-
-		fmt.Println("Dead ",<-deadEle)
-		Sleep(3*Second)
+		select {
+		case ele:= <-newEle:
+			
+			fmt.Println("Connected ", ele)
+		case ele:= <-deadEle:
+			fmt.Println("Dead ", ele)
+		}
+		fmt.Println("Inne i for-løkken")
 	}
-
 
 }
