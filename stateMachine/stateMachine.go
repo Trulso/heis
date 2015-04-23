@@ -46,6 +46,7 @@ func Init(FloorReached chan int, NewOrder chan int) {
 				if queue.ShouldStop(floor) {
 					io.SetMotorDir(0)
 					doorTimer.Reset(3 * time.Second)
+					io.SetDoorLamp(1)
 					state = DOOR_OPEN
 					queue.OrderCompleted(floor)
 				}
@@ -57,6 +58,8 @@ func Init(FloorReached chan int, NewOrder chan int) {
 		case <-doorTimer.C:
 			switch state {
 			case DOOR_OPEN:
+				io.Ser
+				queue.NextOrder()
 
 			}
 		}
