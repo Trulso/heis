@@ -21,12 +21,12 @@ const (
 
 
 type Elevator struct {
-	iP int
-	direction int
-	lastPassedFloor int
-	upOrders [N_FLOORS]bool
-	downOrders [N_FLOORS]bool
-	commandOrders [N_FLOORS]bool
+	IP int
+	Direction int
+	LastPassedFloor int
+	UpOrders [N_FLOORS]bool
+	DownOrders [N_FLOORS]bool
+	CommandOrders [N_FLOORS]bool
 }
 
 var myIP = //SKaff lokalIPadresse
@@ -53,8 +53,6 @@ func Init(
 		select {
 		case floor := <-upOrderChan:
 
-			cheapestElevator := cheapestElevator()
-
 		case floor := <-downOrderChan:
 
 		case floor := <-commandOrderChan:
@@ -73,11 +71,11 @@ func cheapestElevator() Elevator {
 //b
 func costFunction(elevator Elevator, floor int, direction int) int {
 	cost := 0
-	difference := elevator.lastPassedFloor - floor
-	if elevator.direction == STOP {
+	difference := elevator.LastPassedFloor - floor
+	if elevator.Direction == STOP {
 		cost = cost + 1*difference
 		return cost
-	} else if elevator.direction == UP {
+	} else if elevator.Direction == UP {
 		if difference > 0 {
 			if
  
@@ -103,18 +101,31 @@ func AddElevator(newElevator Elevator, IP string){
 
 func OrderCompleted(floor int){
 	for IP, elevator := range elevators {
-		elevator.upOrders[floor] = false
-		elevator.downOrders[floor] = false
+		elevator.UpOrders[floor] = false
+		elevator.DownOrders[floor] = false
 		if myIP == IP{
-			elevator.commandOrders[floor] = false
-		}
-	
+			elevator.CommandOrders[floor] = false
+		}	
 	}
 	//TODO: send en beskjed til netverket om at en ordre har blitt fjernet.
 }
 
 func reDistributeOrdersFrom(string IP){
-	//Regner vekt til alle ordre som removedElevator hadde, og tilegner dem en ny heis.
+	if len(elevators) < 3 { //Tar alle bestillingene selv om man er eneste heis igjen.
+		for floor :=0; floor < N_FLOORS; floor++ {
+ 		elevators[myIP].UpOrders[floor] = elevators[myIP].UpOrders[floor] || elevators[IP].UpOrders[floor]
+ 		elevators[myIP].DownOrders[floor] = elevators[myIP].DownOrders[floor] || elevators[IP].DownOrders[floor]
+ 		}
+	} else {//Regner vekt til alle ordre som removedElevator hadde, og tilegner dem en ny heis.
+		for floor := 0; floor < N_FLOORS; floor++ {
+			if 
+		} 
+	
+
+	}
+
+	
+	//Sier fra til netverket
 }
 
 func NextOrder() int {
