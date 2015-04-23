@@ -37,7 +37,9 @@ type Elevator struct {
 	CommandOrders   []bool
 }
 
-var myIP = string //SKaff lokalIPadresse
+
+
+var myIP = string
 var elevators = make(map[string]*Elevator)
 
 //Channels
@@ -68,7 +70,9 @@ func Init(
 	}
 }
 func isIdenticalOrder(newOrder Order) {
-
+	for IP, elevator := range elevators{
+		if 
+	}
 }
 
 func cheapestElevator() string {
@@ -94,11 +98,6 @@ func ShouldStop(floor int) bool {
 	//TODO: sjekke egen bestillingliste
 }
 
-func RemoveElevator(string IP) {
-	reDistributeOrdersFrom(IP)
-	delete(elevators, IP)
-}
-
 func AddElevator(newElevator Elevator, IP string) {
 	elevators[IP] = &newElevator
 }
@@ -114,56 +113,48 @@ func OrderCompleted(floor int) {
 	//TODO: send en beskjed til netverket om at en ordre har blitt fjernet.
 }
 
-func reDistributeOrdersFrom(string IP) {
-	if len(elevators) < 3 { //Tar alle bestillingene selv om man er eneste heis igjen.
-		for floor := 0; floor < N_FLOORS; floor++ {
-			elevators[myIP].UpOrders[floor] = elevators[myIP].UpOrders[floor] || elevators[IP].UpOrders[floor]
-			elevators[myIP].DownOrders[floor] = elevators[myIP].DownOrders[floor] || elevators[IP].DownOrders[floor]
-		}
-	} else { //Regner vekt til alle ordre som removedElevator hadde, og tilegner dem en ny heis.
-		for floor := 0; floor < N_FLOORS; floor++ {
-			// if
-		}
-
-	}
-
-	//Sier fra til netverket
-}
-
 func NextDirection() int {
 	if elevators[myIP].Direction == UP {
 		if ordersAbove() {
 			return UP
 		}else if ordersBellow() {
 			return DOWN
-		}else{ 
-			return STOP
 		}
 	} else if elevators[myIP].Direction == DOWN {
 		if ordersBellow() {
 			return DOWN
 		}else if ordersAbove() {
 			return UP
-		}else{ 
-			return STOP
 		}
 	}
 }
 
-func ordersAbove() bool{
-	for floor := elevators[myIP].LastPassedFloor + 1; floor < N_FLOORS; floor++ {
-		if elevators[myIP].UpOrders[floor] || elevators[myIP].CommandOrders || elevators[myIP].DownOrders{
+func ordersAbove(IP string) bool{
+	for floor := elevators[IP].LastPassedFloor + 1; floor < N_FLOORS; floor++ {
+		if elevators[IP].UpOrders[floor] || elevators[IP].CommandOrders || elevators[IP].DownOrders{
 			return true
 		}
 	}
 	return false
 }
 
-func ordersBellow() bool{
-	for floor := elevators[myIP].LastPassedFloor - 1; floor > -1; floor-- {
-		if elevators[myIP].UpOrders[floor] || elevators[myIP].CommandOrders[floor] || elevators[myIP].DownOrders[floor] {
+func ordersBellow(IP string) bool{
+	for floor := elevators[IP].LastPassedFloor - 1; floor > -1; floor-- {
+		if elevators[IP].UpOrders[floor] || elevators[IP].CommandOrders[floor] || elevators[IP].DownOrders[floor] {
 			return true
 		}
 	}
-	false
+	return false
 }
+
+func isQueueEmpty(IP string) bool {
+	if ordersAbove(IP) || ordersBellow(IP) {
+		return false
+	}
+	floor := elevators[IP].LastPassedFloor
+	if elevators[IP].UpOrders[floor] || elevators[IP].DownOrders[floor] ||  elevators[IP].CommandOrders[floor] {
+		return false
+	}
+	return true
+}
+	

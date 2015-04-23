@@ -10,6 +10,7 @@ const (
 	Up   = 1
 	Down = -1
 	Stop = 0
+	
 	On   = 1
 	Off  = 0
 	Command = 2
