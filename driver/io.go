@@ -1,12 +1,13 @@
 package driver  // where "driver" is the folder that contains io.go, io.c, io.h, channels.go, channels.c and driver.go
 /*
 #cgo LDFLAGS: -lcomedi -lm
+#cgo LFFLAGS: C:\Users\Brage\Documents\Github\heis\driver\simulation_elevator.a
 #include "io.h"
 */
 import "C"
 
 func Io_init() int {
-	return int(C.io_init())
+	return int(C.io_init(ET_simuation))
 }
 
 func Io_set_bit(channel int){
