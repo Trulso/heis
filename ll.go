@@ -2,24 +2,27 @@ package main
 	
 
 import (
-	."fmt"
+	"fmt"
 	."./network"
 	//."time"
 )
 
 func main() {
 	
-	myc := make (chan []byte)
+	fmt.Println(GetIP())
 
 
-	go UDPRx(myc,30003)
+	// myc := make (chan []byte)
 
 
-	for{
-		rx := make([]byte,1024)
-		rx  = <- myc
-		Printf(string(rx))
-	}
+	// go UDPRx(myc,30003)
+
+
+	// for{
+	// 	rx := make([]byte,1024)
+	// 	rx  = <- myc
+	// 	Printf(string(rx))
+	// }
 
 }
 

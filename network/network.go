@@ -3,16 +3,45 @@ package network
 import (
 	"fmt"
 	"net"
-	//"encoding/json"
+	"encoding/json"
 	"time"
+	//"os"
 )
 
 
+const(
 
-type ElevatorInfo struct {
-		Id int
-		Tx string
+	elevatorDead = 1000000000
+	HeartBeatPort = 30103
+
+
+)
+
+
+type Heartbeat struct {
+		Id string
+		Time time.Time
 }
+
+
+func GetIP() string {
+
+	addrs, error := net.InterfaceAddrs()
+	if error != nil {	
+    	fmt.Println("error:",error)
+    	}
+
+   	for _, address := range addrs {
+    	if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+    		if ipnet.IP.To4() != nil {
+            	return ipnet.IP.String()
+    		}
+		}
+	}
+	return ""
+}
+
+
 
 
 func UDPDial(port int) *net.UDPConn {
@@ -76,16 +105,52 @@ func UDPTx(tx chan []byte,port int)  {
 	}
 }
 
-func HeartMonitor() {
 
-	//un_buffer,_ := json.Marshal(buffer)
+func HeartMonitor(newElevator chan string,deadElevator chan string) {
+	
+	receive := make(chan []byte)
+	send := make(chan []byte)
+	go UDPRx(receive,HeartBeatPort)
+	go UDPTx(send,HeartBeatPort)
+	
 
+	heartbeats := make(map[string]time.Time)
+	
+	for{
+		myBeat := Heartbeat{GetIP(),time.Now()}
+		myBeatBs,error := json.Marshal(myBeat)
+		
+		if error !=nil{
+			fmt.Println("error:", error)
+		}
+	 	
+	 	send <- myBeatBs
+	 	otherBeatBs := <-receive
 
-	//error = json.Unmarshal(buffer[:n], &temp_struct)
-	//if error != nil {
-	//	fmt.Println("error:", error)
-	//}
+	 	otherBeat := Heartbeat{}
 
+	 	json.Unmarshal(otherBeatBs,otherBeat)
+
+		_,ok := heartbeats[otherBeat.Id]
+		
+		if ok {
+			heartbeats[otherBeat.Id] = otherBeat.Time
+		}else{
+			//Varsle om ny heis
+			newElevator <- otherBeat.Id
+			heartbeats[otherBeat.Id] = otherBeat.Time 
+		}
+
+		for i,t := range heartbeats {
+			dur := time.Since(t) 
+			if dur.Nanoseconds() > elevatorDead {
+				// ELEVATOR DOWN, I REPEAT, ELEVATOR DOWN!
+				deadElevator <- i
+				delete(heartbeats,i)
+
+			}
+		}
+	}
 }
 
 func StatusMonitor(){
