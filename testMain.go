@@ -5,46 +5,46 @@ import(
 	"fmt"
 	"time"
 	//"./queue"
-	"net"
+	//"net"
 
 
 )
 const N_FLOORS = 4
 type Elevator struct {
-	direction int
-	lastPassedFloor int
-	upOrders []bool
-	downOrders []bool
-	commandOrders []bool
+	Direction int
+	LastPassedFloor int
+	UpOrders []bool
+	DownOrders []bool
+	CommandOrders []bool
 }
 
 // var myIP = //SKaff lokalIPadresse
-var elevators = map[string]Elevator{}
-
-var elev1 = Elevator{1,1,[]bool{true,false,true,false},[]bool{false,false,false,false},[]bool{true,true,true,true}}
+var elevators = map[string]*Elevator{}
+var myIP = "IP1"
+var elev1 = Elevator{1,1,[]bool{true,false,false,false},[]bool{false,false,false,false},[]bool{true,true,false,false}}
 var elev2 = Elevator{1,2,[]bool{false,false,false,true},[]bool{true,false,true,false},[]bool{true,false,true,true}}
 
 func main(){
-	fmt.Println(net.IPv4bcast)
-	Addr, _ := net.InterfaceAddrs()
-	fmt.Println(Addr)
-	fmt.Print("Hei\n")
- 	fmt.Println(elev1.upOrders[1])
 
- 	elevators["IP1"] = elev1
- 	elevators["IP2"] = elev2
+ 	elevators["IP1"] = &elev1
+ 	elevators["IP2"] = &elev2
 
- 	fmt.Println(elevators["IP1"].upOrders)
- 	fmt.Println(elevators["IP1"].downOrders)
+ 	fmt.Println("Oppordrer: ", elevators["IP1"].UpOrders)
+ 	fmt.Println("Nedordrer: ", elevators["IP1"].DownOrders)
  	if len(elevators) < 3 {
 		for floor :=0; floor < N_FLOORS; floor++ {
- 		elevators["IP1"].upOrders[floor] = elevators["IP1"].upOrders[floor] || elevators["IP2"].upOrders[floor]
- 		elevators["IP1"].downOrders[floor] = elevators["IP1"].downOrders[floor] || elevators["IP2"].downOrders[floor]
- 	}
+ 		elevators["IP1"].UpOrders[floor] = elevators["IP1"].UpOrders[floor] || elevators["IP2"].UpOrders[floor]
+ 		elevators["IP1"].DownOrders[floor] = elevators["IP1"].DownOrders[floor] || elevators["IP2"].DownOrders[floor]
+ 		}
 	}
+	fmt.Println("Oppordrer: ", elevators["IP1"].UpOrders)
+	fmt.Println("Nedordrer: ", elevators["IP1"].DownOrders)
 
-	fmt.Println(elevators["IP1"].upOrders)
-	fmt.Println(elevators["IP1"].downOrders)
+	/*fmt.Println(ordersAbove())
+	elevators["IP1"].LastPassedFloor = 0
+	fmt.Println(ordersAbove())
+*/
+
 
 	doorTimer := time.NewTimer(1000*time.Millisecond)
 	<-doorTimer.C
@@ -56,4 +56,14 @@ func main(){
 		fmt.Print("Det har gaatt fem sekund\n")
 		
 	}
+}
+
+
+func ordersAbove() bool{
+	for floor := elevators[myIP].LastPassedFloor + 1; floor < N_FLOORS; floor++ {
+		if elevators[myIP].UpOrders[floor] || elevators[myIP].CommandOrders[floor] || elevators[myIP].DownOrders[floor]{
+			return true
+		}
+	}
+	return false
 }

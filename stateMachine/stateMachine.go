@@ -1,10 +1,10 @@
 package stateMachine
 
 import (
+	io "../fakeDriver"
 	"../queue"
 	"fmt"
 	"time"
-	io "../fakeDriver"
 	//io "../driver"
 )
 
@@ -14,8 +14,9 @@ const (
 	MOVING    = 2
 
 	UP   = 1
-	DOWN = -1
 	STOP = 0
+	DOWN = -1
+	
 )
 
 //state
@@ -59,7 +60,7 @@ func Init(FloorReached chan int, NewOrder chan int) {
 			switch state {
 			case DOOR_OPEN:
 				io.SetDoorLamp(0)
-				order := queue.NextOrder()
+				order := queue.NextDirection()
 
 			}
 		}
