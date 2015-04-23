@@ -14,22 +14,34 @@ const (
 	N_FLOORS			= 4
 	
 	UP 					= 1
-	DOWN 				= -1
 	STOP				= 0
+	DOWN 				= -1
+	
 )
 
 
+type Message struct {
+	MessageType string //neworder,just arrived, status update, completed order,
+	SenderIP string
+	elevators map[string]Elevator
 
-type Elevator struct {
-	IP int
-	Direction int
-	LastPassedFloor int
-	UpOrders [N_FLOORS]bool
-	DownOrders [N_FLOORS]bool
-	CommandOrders [N_FLOORS]bool
 }
 
-var myIP = //SKaff lokalIPadresse
+type Order struct{
+	Direction int
+	Floor int
+}
+
+
+type Elevator struct {
+	Direction int
+	LastPassedFloor int
+	UpOrders []bool
+	DownOrders []bool
+	CommandOrders []bool
+}
+
+var myIP = string //SKaff lokalIPadresse
 var elevators = map[string]Elevator
 
 //Channels
@@ -46,12 +58,15 @@ func Init(
 		upOrderChan chan int,
 		downOrderChan chan int,
 		commandOrderChan chan int,
+		receiveMsgChan chan int,
+
 
 	){
 
 	for {
 		select {
 		case floor := <-upOrderChan:
+			newOrder=Order{UP,floor}
 
 		case floor := <-downOrderChan:
 
@@ -60,7 +75,7 @@ func Init(
 		}
 	}
 }
-func isIdenticalOrder(floor int, direction int){
+func isIdenticalOrder(newOrder Order){
 
 }
 
@@ -68,10 +83,10 @@ func cheapestElevator() Elevator {
 	//TODO: Bruker costFunction til å finne den billigste heisen
 }
 
-//b
-func costFunction(elevator Elevator, floor int, direction int) int {
+
+func costFunction(elevator Elevator, newOrder Order) int {
 	cost := 0
-	difference := elevator.LastPassedFloor - floor
+	difference := elevator.LastPassedFloor - newOrder.floor
 	if elevator.Direction == STOP {
 		cost = cost + 1*difference
 		return cost
@@ -129,6 +144,18 @@ func reDistributeOrdersFrom(string IP){
 }
 
 func NextOrder() int {
+	if elevators[myIP].Direction == UP {
+		for floor := elevators[myIP].LastPassedFloor + 1; floor < N_FLOORS; floor++ {
+			if elevators[myIP].UpOrders[floor] || elevators[myIP].CommandOrders {
+				return UP
+			}
+		}
+		for floor := elevators[myIP].LastPassedFloor -1 ; floor > -1; floor-- {
+			if elevators[myIP].UpOrders[floor] || elevators[myIP].CommandOrders {
+				return DOWN
+			}
+		}
+	}
 
 
 }

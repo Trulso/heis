@@ -58,8 +58,8 @@ func Init(FloorReached chan int, NewOrder chan int) {
 		case <-doorTimer.C:
 			switch state {
 			case DOOR_OPEN:
-				io.Ser
-				queue.NextOrder()
+				io.SetDoorLamp(0)
+				order := queue.NextOrder()
 
 			}
 		}
