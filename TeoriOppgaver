@@ -1,0 +1,13 @@
+Atomic Operation?
+En operasjon hvor prossessoren leser og skriver til samme sted under én bussoperasjon.
+Dette hindrer andre å gjøre noe før den er ferdig med operasjonen
+
+A Semaphore?
+Et flagg i software eller hardware. Brukes til å merke delte variabler. Prossesser skjekker semaphoren om det er
+greit å bruke den delte variabelen eller ikke.
+
+A Mutex?
+Lar tråder dele samme ressurs, men ikke samtidig. Når en prossess vil ha tilgang til en Mutex låser han den for andre.
+
+A Critical Section?
+Del av koden som bruker delte variabler. Burde være å liten som mulig. 
