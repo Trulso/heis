@@ -24,6 +24,26 @@ type Heartbeat struct {
 		Time time.Time
 }
 
+type Message struct {
+	MessageType string //neworder,just arrived, status update, completed order,
+	SenderIP    string
+	elevators   map[string]Elevator
+}
+
+type Order struct {
+	Direction int
+	Floor     int
+}
+
+type Elevator struct {
+	Direction       int
+	LastPassedFloor int
+	UpOrders        []bool
+	DownOrders      []bool
+	CommandOrders   []bool
+}
+
+
 
 func GetIP() string {
 
@@ -108,31 +128,36 @@ func UDPTx(tx chan []byte,port int)  {
 }
 
 
-
-
-func HeartMonitor(newElevator chan string,deadElevator chan string) {
-	
-	receive := make(chan []byte,1)
+func SendHeartBeat(){
 	send := make(chan []byte,1)
-	go UDPRx(receive,HeartBeatPort)
 	go UDPTx(send,HeartBeatPort)
-	
 
-	heartbeats := make(map[string]*time.Time)
-	
-	for{	
+	for{
 		myBeat := Heartbeat{GetIP(),time.Now()}
 		myBeatBs,error := json.Marshal(myBeat)
 		
 		if error !=nil{
 			fmt.Println("error:", error)
 		}
-		fmt.Println(string(myBeatBs))
 	 	send <- myBeatBs
+	 	time.Sleep(300*time.Millisecond)
+	}
+
+
+}
+
+func HeartMonitor(newElevator chan string,deadElevator chan string) {
+	
+	receive := make(chan []byte,1)
+	heartbeats := make(map[string]*time.Time)
+	go UDPRx(receive,HeartBeatPort)
+	go SendHeartBeat()
+
+	for{	
 	 	otherBeatBs := <-receive
 	 	
 	 	otherBeat := Heartbeat{}
-	 	error = json.Unmarshal(otherBeatBs,&otherBeat)
+	 	error := json.Unmarshal(otherBeatBs,&otherBeat)
 	 	fmt.Println(string(otherBeatBs))
 		if error !=nil{
 			fmt.Println("error:", error)
@@ -163,7 +188,8 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 	}
 }
 
-func StatusMonitor(){
+
+func StatusMonitor(toPass chan Message,toGet chan Message){
 
 	receive := make(chan []byte)
 	send := make(chan []byte)
@@ -172,13 +198,26 @@ func StatusMonitor(){
 	
 	for{
 
-
+		toPassBs,error := json.Marshal(<-toPass)
+		if error !=nil{
+			fmt.Println("error:", error)
+		}
+		send<-toPassBs
+		RxMessageBs:=<-receive
+		RxMessage := Message{}
+	 	error = json.Unmarshal(RxMessageBs,&RxMessage)
+		if error !=nil{
+			fmt.Println("error:", error)
+		}
+		toGet<-RxMessage
 	}
 
 
 }
 
 func AcknowledgeMonitor(){
+
+
 
 
 }
