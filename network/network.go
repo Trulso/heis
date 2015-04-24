@@ -116,7 +116,7 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 	go UDPTx(send,HeartBeatPort)
 	
 
-	heartbeats := make(map[string]*time.Time)
+	heartbeats := make(map[string]time.Time)
 	
 	for{	
 		myBeat := Heartbeat{GetIP(),time.Now()}
@@ -136,10 +136,10 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 		_,ok := heartbeats[otherBeat.Id]
 		
 		if ok {
-			heartbeats[otherBeat.Id] = &otherBeat.Time
+			heartbeats[otherBeat.Id] = otherBeat.Time
 		}else{
 			newElevator <- otherBeat.Id
-			heartbeats[otherBeat.Id] = &otherBeat.Time 
+			heartbeats[otherBeat.Id] = otherBeat.Time 
 			
 		}
 
