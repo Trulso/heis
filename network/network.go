@@ -108,8 +108,8 @@ func UDPTx(tx chan []byte,port int)  {
 
 func HeartMonitor(newElevator chan string,deadElevator chan string) {
 	
-	receive := make(chan []byte)
-	send := make(chan []byte)
+	receive := make(chan []byte,1)
+	send := make(chan []byte,1)
 	go UDPRx(receive,HeartBeatPort)
 	go UDPTx(send,HeartBeatPort)
 	
