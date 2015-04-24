@@ -206,27 +206,26 @@ func SetButtonLed(floor int,button int){
 		}
 	}
 	
-		if button == Up {
-			if floor == 0 {
-				Io_set_bit(LIGHT_UP1)
-			}
-			if floor == 1 {
-				Io_set_bit(LIGHT_UP2)
-			}
-			if floor == 2 {
-				Io_set_bit(LIGHT_UP3)
-			}
+	if button == Up {
+		if floor == 0 {
+			Io_set_bit(LIGHT_UP1)
 		}
-		if button == Down {
-			if floor == 1 {
-				Io_set_bit(LIGHT_DOWN2)
-			}
-			if floor == 2 {
-				Io_set_bit(LIGHT_DOWN3)
-			}
-			if floor == 3 {
-				Io_set_bit(LIGHT_DOWN4)
-			}
+		if floor == 1 {
+			Io_set_bit(LIGHT_UP2)
+		}
+		if floor == 2 {
+			Io_set_bit(LIGHT_UP3)
+		}
+	}
+	if button == Down {
+		if floor == 1 {
+			Io_set_bit(LIGHT_DOWN2)
+		}
+		if floor == 2 {
+			Io_set_bit(LIGHT_DOWN3)
+		}
+		if floor == 3 {
+			Io_set_bit(LIGHT_DOWN4)
 		}
 	}
 }

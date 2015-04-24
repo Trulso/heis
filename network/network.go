@@ -79,7 +79,7 @@ func UDPRx(rx chan []byte ,port int){
 	socket := UDPListen(port)
 
 	for{
-		socket.SetReadDeadline(time.Now().Add(10*time.Second)) //ingen aktivitet på net i løpet av 10s, noe er feil ?=
+		//socket.SetReadDeadline(time.Now().Add(10*time.Second)) //ingen aktivitet på net i løpet av 10s, noe er feil ?=
 		buffer := make([]byte,1024)
 		n,_,error := socket.ReadFromUDP(buffer) 
 		
@@ -98,11 +98,74 @@ func UDPTx(tx chan []byte,port int)  {
 	socket := UDPDial(port)
 
 	for{
-		socket.SetWriteDeadline(time.Now().Add(10*time.Second))
+		//socket.SetWriteDeadline(time.Now().Add(10*time.Second))
 		_,error := socket.Write(<- tx)
 		if error !=nil{
 			fmt.Println("error:", error)
+<<<<<<< HEAD
+		}
+<<<<<<< HEAD
+		time.Sleep(100000000*time.Millisecond)	
+	}	
+}
+
+
+func HeartMonitor(newElevator chan string,deadElevator chan string) {
+	
+	receive := make(chan []byte)
+	send := make(chan []byte)
+	go UDPRx(receive,HeartBeatPort)
+	go UDPTx(send,HeartBeatPort)
+	
+
+	heartbeats := make(map[string]time.Time)
+	
+	for{
+		myBeat := Heartbeat{GetIP(),time.Now()}
+		myBeatBs,error := json.Marshal(myBeat)
+		
+		if error !=nil{
+			fmt.Println("error:", error)
+		}
+	 	
+	 	send <- myBeatBs
+	 	otherBeatBs := <-receive
+	 	
+	 	otherBeat := Heartbeat{}
+	 	error = json.Unmarshal(otherBeatBs,&otherBeat)
+		if error !=nil{
+			fmt.Println("error:", error)
+		}
+		fmt.Println(otherBeat.Id)
+		_,ok := heartbeats[otherBeat.Id]
+		
+		if ok {
+			fmt.Println("beating")
+			heartbeats[otherBeat.Id] = otherBeat.Time
+		}else{
+			fmt.Println("Rett før channel")
+			newElevator <- otherBeat.Id
+			fmt.Println("Rett etter channel")
+			heartbeats[otherBeat.Id] = otherBeat.Time 
+		}
+
+		for i,t := range heartbeats {
+			fmt.Println("Heis på deis")
+			fmt.Println(i)
+			dur := time.Since(t) 
+			if dur.Nanoseconds() > elevatorDead {
+				deadElevator <- i
+				delete(heartbeats,i)
+
+			}
+		}
+		time.Sleep(100000000*time.Nanosecond)
+=======
+		time.Sleep(10*time.Millisecond)	
+
+=======
 		}	
+>>>>>>> b4f6b07c522df014e900c07dbc1e121ffd1dd65c
 	}
 	time.Sleep(30*time.Millisecond)
 }
@@ -156,7 +219,12 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 				delete(heartbeats,i)
 			}
 		}
+<<<<<<< HEAD
+		time.Sleep(10*time.Millisecond)
+>>>>>>> origin/master
+=======
 		fmt.Println("\n")
+>>>>>>> b4f6b07c522df014e900c07dbc1e121ffd1dd65c
 	}
 }
 
