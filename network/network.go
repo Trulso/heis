@@ -158,7 +158,6 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 	 	
 	 	otherBeat := Heartbeat{}
 	 	error := json.Unmarshal(otherBeatBs,&otherBeat)
-	 	fmt.Println(string(otherBeatBs))
 		if error !=nil{
 			fmt.Println("error:", error)
 		}
@@ -177,12 +176,11 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 
 			dur := time.Since(*t)
 			fmt.Println(dur)
-			if dur.Nanoseconds() > 3000000000 {
+			if dur.Seconds() > 1 {
 				deadElevator <- i
 				delete(heartbeats,i)
 			}
 		}
-		time.Sleep(10*time.Millisecond)
 		fmt.Println("\n")
 
 	}
