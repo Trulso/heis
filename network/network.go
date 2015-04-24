@@ -101,6 +101,7 @@ func UDPTx(tx chan []byte,port int)  {
 		_,error := socket.Write(<- tx)
 		if error !=nil{
 			fmt.Println("error:", error)
+<<<<<<< HEAD
 		}
 <<<<<<< HEAD
 		time.Sleep(100000000*time.Millisecond)	
@@ -161,19 +162,22 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 =======
 		time.Sleep(10*time.Millisecond)	
 
+=======
+		}	
+>>>>>>> b4f6b07c522df014e900c07dbc1e121ffd1dd65c
 	}
 }
 
 
 func HeartMonitor(newElevator chan string,deadElevator chan string) {
 	
-	receive := make(chan []byte)
-	send := make(chan []byte)
+	receive := make(chan []byte,1)
+	send := make(chan []byte,1)
 	go UDPRx(receive,HeartBeatPort)
 	go UDPTx(send,HeartBeatPort)
 	
 
-	heartbeats := make(map[string]time.Time)
+	heartbeats := make(map[string]*time.Time)
 	
 	for{	
 		myBeat := Heartbeat{GetIP(),time.Now()}
@@ -182,38 +186,43 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 		if error !=nil{
 			fmt.Println("error:", error)
 		}
+		fmt.Println(string(myBeatBs))
 	 	send <- myBeatBs
 	 	otherBeatBs := <-receive
 	 	
 	 	otherBeat := Heartbeat{}
 	 	error = json.Unmarshal(otherBeatBs,&otherBeat)
+	 	fmt.Println(string(otherBeatBs))
 		if error !=nil{
 			fmt.Println("error:", error)
 		}
 		_,ok := heartbeats[otherBeat.Id]
 		
 		if ok {
-			heartbeats[otherBeat.Id] = otherBeat.Time
+			heartbeats[otherBeat.Id] =&otherBeat.Time
 		}else{
 			newElevator <- otherBeat.Id
-			heartbeats[otherBeat.Id] = otherBeat.Time 
+			heartbeats[otherBeat.Id] =&otherBeat.Time 
 			
 		}
 
 		for i,t := range heartbeats {
 			fmt.Println(i)
-			fmt.Println("\n \n")
-			dur := time.Since(t)
-			fmt.Println(dur.Nanoseconds()) 
-			fmt.Println("before dur")
+
+			dur := time.Since(*t)
+			fmt.Println(dur)
 			if dur.Nanoseconds() > 300000000000 {
 				fmt.Println("why u go in here")
 				deadElevator <- i
 				delete(heartbeats,i)
 			}
 		}
+<<<<<<< HEAD
 		time.Sleep(10*time.Millisecond)
 >>>>>>> origin/master
+=======
+		fmt.Println("\n")
+>>>>>>> b4f6b07c522df014e900c07dbc1e121ffd1dd65c
 	}
 }
 
