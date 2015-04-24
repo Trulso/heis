@@ -137,9 +137,9 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 		_,ok := heartbeats[otherBeat.Id]
 		
 		if ok {
+			fmt.Println("beating")
 			heartbeats[otherBeat.Id] = otherBeat.Time
 		}else{
-			//Varsle om ny heis
 			fmt.Println("Rett før channel")
 			newElevator <- otherBeat.Id
 			fmt.Println("Rett etter channel")
@@ -147,9 +147,10 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 		}
 
 		for i,t := range heartbeats {
+			fmt.Println("Heis på deis")
+			fmt.Println(i)
 			dur := time.Since(t) 
 			if dur.Nanoseconds() > elevatorDead {
-				// ELEVATOR DOWN, I REPEAT, ELEVATOR DOWN!
 				deadElevator <- i
 				delete(heartbeats,i)
 
