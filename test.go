@@ -16,14 +16,13 @@ func main() {
 
 	for{
 		select {
-		case ele:= <-newEle:
-			
-			fmt.Println("Connected ", ele)
-		case ele:= <-deadEle:
-			fmt.Println("Dead ", ele)
-		}
-		
-		fmt.Println("Inne i for-løkken")
+			case ele:= <-newEle:	
+				fmt.Println("Connected ", ele)
+		 	case ele:= <-deadEle:
+				fmt.Println("Dead ", ele)
+			default:
+					
+		 }
 	}
 
 }
