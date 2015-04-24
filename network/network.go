@@ -13,6 +13,7 @@ const(
 
 	elevatorDead = 1000000000
 	HeartBeatPort = 30103
+	StatusPort = 	30203
 
 
 )
@@ -103,6 +104,7 @@ func UDPTx(tx chan []byte,port int)  {
 			fmt.Println("error:", error)
 		}	
 	}
+	time.Sleep(30*time.Millisecond)
 }
 
 
@@ -148,7 +150,7 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 
 			dur := time.Since(*t)
 			fmt.Println(dur)
-			if dur.Nanoseconds() > 300000000000 {
+			if dur.Nanoseconds() > 3000000000 {
 				fmt.Println("why u go in here")
 				deadElevator <- i
 				delete(heartbeats,i)
@@ -160,6 +162,15 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 
 func StatusMonitor(){
 
+	receive := make(chan []byte)
+	send := make(chan []byte)
+	go UDPRx(receive,StatusPort)
+	go UDPTx(send,StatusPort)
+	
+	for{
+
+
+	}
 
 
 }
