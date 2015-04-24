@@ -101,9 +101,7 @@ func UDPTx(tx chan []byte,port int)  {
 		_,error := socket.Write(<- tx)
 		if error !=nil{
 			fmt.Println("error:", error)
-		}
-		time.Sleep(10*time.Millisecond)	
-
+		}	
 	}
 }
 
@@ -116,7 +114,7 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 	go UDPTx(send,HeartBeatPort)
 	
 
-	heartbeats := make(map[string]time.Time)
+	heartbeats := make(map[string]*time.Time)
 	
 	for{	
 		myBeat := Heartbeat{GetIP(),time.Now()}
@@ -125,37 +123,39 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 		if error !=nil{
 			fmt.Println("error:", error)
 		}
+		fmt.Println(string(myBeatBs))
 	 	send <- myBeatBs
 	 	otherBeatBs := <-receive
 	 	
 	 	otherBeat := Heartbeat{}
 	 	error = json.Unmarshal(otherBeatBs,&otherBeat)
+	 	fmt.Println(string(otherBeatBs))
 		if error !=nil{
 			fmt.Println("error:", error)
 		}
 		_,ok := heartbeats[otherBeat.Id]
 		
 		if ok {
-			heartbeats[otherBeat.Id] = otherBeat.Time
+			heartbeats[otherBeat.Id] =&otherBeat.Time
 		}else{
 			newElevator <- otherBeat.Id
-			heartbeats[otherBeat.Id] = otherBeat.Time 
+			heartbeats[otherBeat.Id] =&otherBeat.Time 
 			
 		}
 
 		for i,t := range heartbeats {
 			fmt.Println(i)
-			fmt.Println("\n \n")
-			dur := time.Since(t)
-			fmt.Println(dur.Nanoseconds()) 
-			fmt.Println("before dur")
+
+			dur := time.Since(*t)
+			fmt.Println(dur)
 			if dur.Nanoseconds() > 300000000000 {
 				fmt.Println("why u go in here")
 				deadElevator <- i
 				delete(heartbeats,i)
 			}
 		}
-		time.Sleep(10*time.Millisecond)
+		fmt.Println("\n")
+		time.Sleep(300*time.Millisecond)
 	}
 }
 
