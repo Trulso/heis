@@ -155,7 +155,6 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 			}
 		}
 		fmt.Println("\n")
-		time.Sleep(300*time.Millisecond)
 	}
 }
 
