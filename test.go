@@ -21,10 +21,8 @@ func main() {
 			fmt.Println("Connected ", ele)
 		case ele:= <-deadEle:
 			fmt.Println("Dead ", ele)
-		
-		case default
-			fmt.Println("Hello")
 		}
+		
 		fmt.Println("Inne i for-løkken")
 	}
 
