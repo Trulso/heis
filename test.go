@@ -2,10 +2,11 @@ package main
 
 import (
 	//"fmt"
-	//"./driver"
+	"./driver"
 	//"./network"
 	"os"
 	"net"
+	"time"
 )
 
 
@@ -24,4 +25,12 @@ func main() {
 			}
 		}
 	}
+	
+	driver.HwInit()
+	
+	time.Sleep(100*time.Millisecond)
+	
+	driver.SetDoorLamp(1)
+	
+	select{}
 }

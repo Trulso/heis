@@ -3,21 +3,50 @@ package network
 import (
 	"fmt"
 	"net"
-	//"encoding/json"
+	"encoding/json"
 	"time"
+	//"os"
 )
 
 
+const(
 
-type ElevatorInfo struct {
-		Id int
-		Tx string
+	elevatorDead = 1000000000
+	HeartBeatPort = 30103
+
+
+)
+
+
+type Heartbeat struct {
+		Id string
+		Time time.Time
 }
+
+
+func GetIP() string {
+
+	addrs, error := net.InterfaceAddrs()
+	if error != nil {	
+    	fmt.Println("error:",error)
+    	}
+
+   	for _, address := range addrs {
+    	if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+    		if ipnet.IP.To4() != nil {
+            	return ipnet.IP.String()
+    		}
+		}
+	}
+	return ""
+}
+
+
 
 
 func UDPDial(port int) *net.UDPConn {
 
-	casting,error:= net.ResolveUDPAddr("udp",fmt.Sprintf("255.255.255.255:%d", port)) 
+	casting,error:= net.ResolveUDPAddr("udp",fmt.Sprintf("129.241.187.255:%d", port)) 
 	if error !=nil{
 		fmt.Println("error:", error)	
 	}
@@ -49,7 +78,7 @@ func UDPRx(rx chan []byte ,port int){
 	socket := UDPListen(port)
 
 	for{
-		socket.SetReadDeadline(time.Now().Add(10*time.Second)) //ingen aktivitet på net i løpet av 10s, noe er feil ?=
+		//socket.SetReadDeadline(time.Now().Add(10*time.Second)) //ingen aktivitet på net i løpet av 10s, noe er feil ?=
 		buffer := make([]byte,1024)
 		n,_,error := socket.ReadFromUDP(buffer) 
 		
@@ -68,24 +97,67 @@ func UDPTx(tx chan []byte,port int)  {
 	socket := UDPDial(port)
 
 	for{
-		socket.SetWriteDeadline(time.Now().Add(10*time.Second))
+		//socket.SetWriteDeadline(time.Now().Add(10*time.Second))
 		_,error := socket.Write(<- tx)
 		if error !=nil{
 			fmt.Println("error:", error)
 		}
-	}
+		time.Sleep(100000000*time.Millisecond)	
+	}	
 }
 
-func HeartMonitor() {
 
-	//un_buffer,_ := json.Marshal(buffer)
+func HeartMonitor(newElevator chan string,deadElevator chan string) {
+	
+	receive := make(chan []byte)
+	send := make(chan []byte)
+	go UDPRx(receive,HeartBeatPort)
+	go UDPTx(send,HeartBeatPort)
+	
 
+	heartbeats := make(map[string]time.Time)
+	
+	for{
+		myBeat := Heartbeat{GetIP(),time.Now()}
+		myBeatBs,error := json.Marshal(myBeat)
+		
+		if error !=nil{
+			fmt.Println("error:", error)
+		}
+	 	
+	 	send <- myBeatBs
+	 	otherBeatBs := <-receive
+	 	
+	 	otherBeat := Heartbeat{}
+	 	error = json.Unmarshal(otherBeatBs,&otherBeat)
+		if error !=nil{
+			fmt.Println("error:", error)
+		}
+		fmt.Println(otherBeat.Id)
+		_,ok := heartbeats[otherBeat.Id]
+		
+		if ok {
+			fmt.Println("beating")
+			heartbeats[otherBeat.Id] = otherBeat.Time
+		}else{
+			fmt.Println("Rett før channel")
+			newElevator <- otherBeat.Id
+			fmt.Println("Rett etter channel")
+			heartbeats[otherBeat.Id] = otherBeat.Time 
+		}
 
-	//error = json.Unmarshal(buffer[:n], &temp_struct)
-	//if error != nil {
-	//	fmt.Println("error:", error)
-	//}
+		for i,t := range heartbeats {
+			fmt.Println("Heis på deis")
+			fmt.Println(i)
+			dur := time.Since(t) 
+			if dur.Nanoseconds() > elevatorDead {
+				deadElevator <- i
+				delete(heartbeats,i)
 
+			}
+		}
+		time.Sleep(100000000*time.Nanosecond)
+	}
 }
 
 func StatusMonitor(){

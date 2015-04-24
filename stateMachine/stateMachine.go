@@ -61,6 +61,9 @@ func Init(FloorReached chan int, NewOrder chan int) {
 			case DOOR_OPEN:
 				io.SetDoorLamp(0)
 				order := queue.NextDirection()
+				if order == 0 {
+					
+				}
 
 			}
 		}
