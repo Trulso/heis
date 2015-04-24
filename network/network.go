@@ -78,7 +78,7 @@ func UDPRx(rx chan []byte ,port int){
 	socket := UDPListen(port)
 
 	for{
-		socket.SetReadDeadline(time.Now().Add(10*time.Second)) //ingen aktivitet på net i løpet av 10s, noe er feil ?=
+		//socket.SetReadDeadline(time.Now().Add(10*time.Second)) //ingen aktivitet på net i løpet av 10s, noe er feil ?=
 		buffer := make([]byte,1024)
 		n,_,error := socket.ReadFromUDP(buffer) 
 		
@@ -97,7 +97,7 @@ func UDPTx(tx chan []byte,port int)  {
 	socket := UDPDial(port)
 
 	for{
-		socket.SetWriteDeadline(time.Now().Add(10*time.Second))
+		//socket.SetWriteDeadline(time.Now().Add(10*time.Second))
 		_,error := socket.Write(<- tx)
 		if error !=nil{
 			fmt.Println("error:", error)
