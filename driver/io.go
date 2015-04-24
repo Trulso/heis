@@ -8,6 +8,7 @@ package driver  // where "driver" is the folder that contains io.go, io.c, io.h,
 import "C"
 
 func Io_init() int {
+
 	return int(C.io_init(C.ET_simulation))
 }
 
