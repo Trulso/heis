@@ -21,14 +21,14 @@ func main() {
 	commandOrdersChan := make(chan int)
 	orderOnSameFloorChan := make(chan int)
 	orderInEmptyQueueChan := make(chan int)
-	newElevator	 := make(chan string)
-	deadElevator := make(chan string)
+	//newElevator	 := make(chan string)
+	//deadElevator := make(chan string)
 	toPass := make(chan Message)
 	toGet := make(chan Message)
 	fmt.Println("Har opprettet alle channels")
 
 
-	go network.HeartbeatTransceiver(newElevator,deadElevator)
+	//go network.HeartbeatTransceiver(newElevator,deadElevator)
 	go network.StatusTransceiver(toPass,toGet)
 
 

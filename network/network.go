@@ -85,7 +85,6 @@ func UDPRx(rx chan []byte ,port int){
 		}
 		
 		buffer = buffer[:n]
-		fmt.Println("MOTAR:",string(buffer))
 		rx <- buffer
 	}
 
@@ -99,7 +98,6 @@ func UDPTx(tx chan []byte,port int)  {
 		
 		dummy := <- tx
 		socket.SetWriteDeadline(time.Now().Add(10*time.Second))
-		fmt.Println("SENDER:",string(dummy))
 		_,error := socket.Write(dummy)
 		if error !=nil{
 			fmt.Println("error:", error)
@@ -164,7 +162,7 @@ func SendStatus(toPass chan Message){
 	go UDPTx(send,StatusPort)
 	
 	for{
-
+		fmt.Println("SendStatus")
 		toPassBs,error := json.Marshal(<-toPass)
 		if error !=nil{
 			fmt.Println("error:", error)
@@ -184,6 +182,7 @@ func StatusTransceiver(toPass chan Message,toGet chan Message){
 
 	
 	for{
+		fmt.Println("RXStatus")
 		RxMessageBs:=<-receive
 		RxMessage := Message{}
 		fmt.Println(string(RxMessageBs))
