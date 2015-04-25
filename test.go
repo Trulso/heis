@@ -13,6 +13,7 @@ func sendorder(toPass chan Message){
 		send := Message{
 		MessageType: "newOrder",
 		SenderIP: network.GetIP(),
+		ReceiverIP: "",
 		Elevators: nil,
 		ThisFloor: Order{
 					Type: -1,
