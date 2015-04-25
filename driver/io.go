@@ -2,14 +2,14 @@ package driver  // where "driver" is the folder that contains io.go, io.c, io.h,
 
 /*
 #cgo CFLAGS: -std=c11
-#cgo LDFLAGS: /GitHub/heis/driver/simulation_elevator.a /GitHub/heis/driver/libphobos2.a -lpthread -lcomedi -lm
+#cgo LDFLAGS: -lpthread -lcomedi -lm
 #include "io.h"
 */
 import "C"
 
 func Io_init() int {
 
-	return int(C.io_init(C.ET_simulation))
+	return int(C.io_init())
 }
 
 func Io_set_bit(channel int){
