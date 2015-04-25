@@ -8,6 +8,7 @@ import (
 	"./queue"
 	"./stateMachine"
 	"./network"
+	."./struct"
 )
 
 
@@ -24,7 +25,6 @@ func main() {
 	deadElevator := make(chan string)
 	toPass := make(chan Message)
 	toGet := make(chan Message)
-	toPass chan Message,toGet chan Message
 	fmt.Println("Har opprettet alle channels")
 
 

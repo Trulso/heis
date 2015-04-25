@@ -2,7 +2,7 @@ package main
 	
 
 import (
-	//"fmt"
+	"fmt"
 	"./network"
 	"time"
 	."./struct"
@@ -28,7 +28,7 @@ func main() {
 						},
 			}
 			toPass <- send
-
+			fmt.Println("Sendt!")
 			time.Sleep(20*time.Second)
 
 		}
