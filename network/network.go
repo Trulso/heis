@@ -101,9 +101,7 @@ func UDPTx(tx chan []byte,port int)  {
 		_,error := socket.Write(<- tx)
 		if error !=nil{
 			fmt.Println("error:", error)
-<<<<<<< HEAD
 		}
-<<<<<<< HEAD
 		time.Sleep(100000000*time.Millisecond)	
 	}	
 }
@@ -158,13 +156,10 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 
 			}
 		}
-		time.Sleep(100000000*time.Nanosecond)
-=======
+
 		time.Sleep(10*time.Millisecond)	
 
-=======
 		}	
->>>>>>> b4f6b07c522df014e900c07dbc1e121ffd1dd65c
 	}
 }
 
@@ -217,12 +212,9 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 				delete(heartbeats,i)
 			}
 		}
-<<<<<<< HEAD
-		time.Sleep(10*time.Millisecond)
->>>>>>> origin/master
-=======
+
 		fmt.Println("\n")
->>>>>>> b4f6b07c522df014e900c07dbc1e121ffd1dd65c
+
 	}
 }
 

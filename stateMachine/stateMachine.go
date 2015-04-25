@@ -29,7 +29,7 @@ NewOrder
 
 */
 
-func Init(FloorReached chan int, NewOrder chan int) {
+func Init(FloorReachedChan chan int, NewOrderChan chan int) {
 	fmt.Printf("Initializing the state machine.\n")
 	state := IDLE
 
@@ -40,7 +40,7 @@ func Init(FloorReached chan int, NewOrder chan int) {
 	for {
 		select {
 
-		case floor := <-FloorReached:
+		case floor := <-FloorReachedChan:
 			io.SetFloorIndicator(floor)
 			switch state {
 			case MOVING:
@@ -52,7 +52,7 @@ func Init(FloorReached chan int, NewOrder chan int) {
 					queue.OrderCompleted(floor)
 				}
 			}
-		case direction := <-NewOrder:
+		case direction := <-NewOrderChan:
 			switch state {
 			case IDLE:
 			}

@@ -6,16 +6,16 @@ import (
 //io "../fakeDriver"
 )
 
-//struct order
-//struct elevator
-//orders= []order
-//elevators= []elevator
 const (
+//Bør fjernes og bruke de fra driveren
 	N_FLOORS = 4
 
+	COMMAND = 2
 	UP   = 1
+	DOWN = -1	
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 	STOP = 0
-	DOWN = -1
 )
 
 type Message struct {
@@ -25,8 +25,8 @@ type Message struct {
 }
 
 type Order struct {
-	Direction int
-	Floor     int
+	Type  int
+	Floor int
 }
 
 type Elevator struct {
@@ -37,25 +37,10 @@ type Elevator struct {
 	CommandOrders   []bool
 }
 
-
-
 var myIP = string
 var elevators = make(map[string]*Elevator)
 
-//Channels
-/*
-Oppbestillingsknapper
-Nedbestillingsknapper
-Commandbestillingsknapper
-Nybestilling
-Statusoppdatering
-*/
-func Init(
-	upOrderChan chan int,
-	downOrderChan chan int,
-	commandOrderChan chan int,
-	receiveMsgChan chan int,
-) {
+func Init(upOrderChan chan int,downOrderChan chan int,commandOrderChan chan int,receiveMsgChan chan int,heartbeatChan chan string,) {
 
 	for {
 		select {
@@ -63,22 +48,56 @@ func Init(
 			newOrder = Order{UP, floor}
 
 		case floor := <-downOrderChan:
+			newOrder = Order{DOWN, floor}
 
 		case floor := <-commandOrderChan:
+			newOrder = Order{COMMAND, floor}
 
 		}
 	}
 }
-func isIdenticalOrder(newOrder Order) {
-	for IP, elevator := range elevators{
-		if 
+func isIdenticalOrder(newOrder Order) bool {
+	for IP, elevator := range elevators {
+		switch newOrder.Type {
+		case UP:
+			if elevator.UpOrders[newOrder.Floor] {
+				return true
+			}
+		case DOWN:
+			if elevator.DownOrders[newOrder.Floor] {
+				return true
+			}
+		case COMMAND:
+			if elevator.CommandOrders[newOrder.Floor] {
+				return true
+			}
+		}
 	}
-}
+	return false
+}//Ferdig
 
-func cheapestElevator() string {
-	return myIP
-	//TODO: Bruker costFunction til å finne den billigste heisen
-}
+func addOrder(newOrder Order) {
+	if isIdenticalOrder(newOrder) {
+		return
+	}
+defer func(){/* Send Oppdateringen til alle sammen*/}()
+	if newOrder.Type == COMMAND {
+		elevator[myIP].CommandOrders[newOrder.floor]
+		return
+	}
+	cheapestElevator := myIP
+	minCost := 
+	for IP,Elevator := range elevators {
+		 cost := costFunction(Elevator, newOrder)
+		 if cost < minCost {
+		 	cheapestElevator = IP
+		 }
+		 if cost = 0 {
+		 	break
+		 }
+	}
+	return
+
 
 func costFunction(elevator Elevator, newOrder Order) int {
 	cost := 0
@@ -90,12 +109,12 @@ func costFunction(elevator Elevator, newOrder Order) int {
 		if difference > 0 {
 		}
 	}
-	return cost
+	return 1
 }
 
 func ShouldStop(floor int) bool {
-	return true
-	//TODO: sjekke egen bestillingliste
+	if elevators[myIP].CommandOrders[floor] || elevators[myIP].
+
 }
 
 func AddElevator(newElevator Elevator, IP string) {
@@ -136,7 +155,7 @@ func ordersAbove(IP string) bool{
 		}
 	}
 	return false
-}
+}//Ferdig
 
 func ordersBellow(IP string) bool{
 	for floor := elevators[IP].LastPassedFloor - 1; floor > -1; floor-- {
@@ -145,7 +164,7 @@ func ordersBellow(IP string) bool{
 		}
 	}
 	return false
-}
+}//Ferdig
 
 func isQueueEmpty(IP string) bool {
 	if ordersAbove(IP) || ordersBellow(IP) {
@@ -156,5 +175,5 @@ func isQueueEmpty(IP string) bool {
 		return false
 	}
 	return true
-}
+}//Ferdig
 	

@@ -4,7 +4,6 @@ package main
 import(
 	"fmt"
 	"time"
-	//"./queue"
 	//"net"
 
 
@@ -21,10 +20,13 @@ type Elevator struct {
 // var myIP = //SKaff lokalIPadresse
 var elevators = map[string]*Elevator{}
 var myIP = "IP1"
-var elev1 = Elevator{1,1,[]bool{true,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
+var elev1 = Elevator{1,1,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
 var elev2 = Elevator{1,2,[]bool{false,false,true,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
 
 func main(){
+	ButtonPressed := make([]int, 10)
+	ButtonPressed[2]=10
+	fmt.Println(ButtonPressed)
 
  	elevators["IP1"] = &elev1
  	elevators["IP2"] = &elev2
@@ -43,8 +45,10 @@ func main(){
 	/*fmt.Println(ordersAbove())
 	elevators["IP1"].LastPassedFloor = 0
 	fmt.Println(ordersAbove())
-*/	fmt.Println(isQueueEmpty("IP1"))
-	fmt.Println(isQueueEmpty("IP2"))
+*/
+	fmt.Println("preprint", elevators["IP1"].UpOrders)
+	turnUpQueueFull("IP1")
+	fmt.Println("postprint", elevators["IP1"].UpOrders)
 
 	doorTimer := time.NewTimer(1000*time.Millisecond)
 	<-doorTimer.C
@@ -86,4 +90,16 @@ func isQueueEmpty(IP string) bool {
 		return false
 	}
 	return true
+}
+
+func turnUpQueueFull(IP string){
+	
+	defer func() {
+		fmt.Println("deferprint", elevators[IP].UpOrders)
+	}()
+	return
+	for i:=0;i<4;i++{
+		elevators[IP].UpOrders[i]=true
+	}
+
 }
