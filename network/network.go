@@ -162,7 +162,6 @@ func SendStatus(toPass chan Message){
 	go UDPTx(send,StatusPort)
 	
 	for{
-		fmt.Println("SendStatus")
 		toPassBs,error := json.Marshal(<-toPass)
 		if error !=nil{
 			fmt.Println("error:", error)
