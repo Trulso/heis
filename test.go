@@ -3,7 +3,7 @@ package main
 import (
          "fmt"
          "./network"
-         "time"
+         //"time"
 		."./struct"         
  )
 
@@ -21,7 +21,7 @@ func sendorder(toPass chan Message){
 	}
 
 	toPass <- send
-	time.Sleep(5*time.Second)
+	//time.Sleep(5*time.Second)
 
 }
 
@@ -40,16 +40,18 @@ func main() {
 
 
 	for{
+		fmt.Println("hallo?1")
 		select {
 			case ele:= <-newEle:	
 				fmt.Println("Connected ", ele)
 		 	case ele:= <-deadEle:
 				fmt.Println("Dead ", ele)
 			default: 
-
+				
 		 }
+		 fmt.Println("hallo?2")
 		 temp := <-toGet
-		 fmt.Println("hallo?")
+		 fmt.Println("hallo?3")
 		 fmt.Println(temp.MessageType, "from:",temp.SenderIP)
 	}
 }
