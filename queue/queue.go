@@ -277,9 +277,11 @@ func StatusDecoder(upOrderChan chan int,downOrderChan chan int,toGet chan Messag
 		}else if RxMessage.MessageType == "statusUpdate" {
 
 
+
 			
 		}else if RxMessage.MessageType == "completedOrder" {
 
+				OrderCompleted(RxMessage.ThisFloor.Floor)
 
 			
 		}else if RxMessage.MessageType == "acknowledge" {
