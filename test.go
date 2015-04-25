@@ -43,6 +43,7 @@ func main() {
 		}
 
 		toPass <- send
+		fmt.Println(<-toGet)
 		time.Sleep(1*time.Second)
 
 	}
