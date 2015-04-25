@@ -85,6 +85,7 @@ func UDPRx(rx chan []byte ,port int){
 		}
 		
 		buffer = buffer[:n]
+		fmt.Println(string(buffer))
 		rx <- buffer
 	}
 
@@ -95,12 +96,14 @@ func UDPTx(tx chan []byte,port int)  {
 	socket := UDPDial(port)
 
 	for{
+		
+		dummy := <- tx
 		socket.SetWriteDeadline(time.Now().Add(10*time.Second))
-		_,error := socket.Write(<- tx)
+		fmt.Println(string(dummy))
+		_,error := socket.Write(dummy)
 		if error !=nil{
 			fmt.Println("error:", error)
-		}
-		time.Sleep(30*time.Millisecond)	
+		}	
 	}	
 }
 
@@ -110,6 +113,7 @@ func SendHeartBeat(){
 	go UDPTx(send,HeartBeatPort)
 
 	for{
+		fmt.Println("trying to beat")
 		myBeat := Heartbeat{GetIP(),time.Now()}
 		myBeatBs,error := json.Marshal(myBeat)
 		
@@ -183,6 +187,8 @@ func StatusTransceiver(toPass chan Message,toGet chan Message){
 	for{
 		RxMessageBs:=<-receive
 		RxMessage := Message{}
+		fmt.Println("Hallo")
+
 	 	error := json.Unmarshal(RxMessageBs,&RxMessage)
 		if error !=nil{
 			fmt.Println("error:", error)
