@@ -37,11 +37,10 @@ func main() {
 		Elevators: nil,
 		ThisFloor: Order{
 					Type: -1,
-					Floor: 4,
+					Floor:
 					},
 		}
 		toPass <- send
-		fmt.Println("Sendt!")
 		time.Sleep(1*time.Second)
 
 	}
