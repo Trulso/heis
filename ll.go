@@ -23,7 +23,7 @@ func main() {
 			SenderIP: network.GetIP(),
 			Elevators: nil,
 			ThisFloor: Order{
-						Type: 1,
+						Type: -1,
 						Floor: 4,
 						},
 			}
