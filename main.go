@@ -21,20 +21,21 @@ func main() {
 	commandOrdersChan := make(chan int)
 	orderOnSameFloorChan := make(chan int)
 	orderInEmptyQueueChan := make(chan int)
-	//newElevator	 := make(chan string)
-	//deadElevator := make(chan string)
+	newElevator	 := make(chan string)
+	deadElevator := make(chan string)
 	toPass := make(chan Message)
 	toGet := make(chan Message)
 	fmt.Println("Har opprettet alle channels")
 
 
-	//go network.HeartbeatTransceiver(newElevator,deadElevator)
+	go network.HeartbeatTransceiver(newElevator,deadElevator)
 	go network.StatusTransceiver(toPass,toGet)
+
 
 
 	go queue.Init(upOrdersChan,downOrdersChan,commandOrdersChan,orderOnSameFloorChan,orderInEmptyQueueChan)
 	go stateMachine.Init(floorReachedChan,orderOnSameFloorChan,orderInEmptyQueueChan)
-	go queue.StatusDecoder(toGet)
+	go queue.StatusDecoder(upOrdersChan,downOrdersChan,toGet,toPass)
 	fmt.Println("Laget en goroutine med queue og FSM")
 
 

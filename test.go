@@ -37,7 +37,7 @@ func main() {
 	toGet := make(chan Message)
 
 	go sendorder(toPass)
-	go network.StatusTransceiver(toPass,toGet)
+	//go network.StatusTransceiver(toPass,toGet)
 
 
 	for{

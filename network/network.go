@@ -185,11 +185,13 @@ func StatusTransceiver(toPass chan Message,toGet chan Message){
 	for{
 		RxMessageBs:=<-receive
 		RxMessage := Message{}
+		fmt.Println(string(RxMessageBs))
 	 	error := json.Unmarshal(RxMessageBs,&RxMessage)
 		if error !=nil{
 			fmt.Println("error:", error)
 		}
 		if RxMessage.SenderIP != GetIP() && (RxMessage.ReceiverIP == GetIP() ||  RxMessage.ReceiverIP == "") {
+			
 			toGet<-RxMessage
 		}
 	}

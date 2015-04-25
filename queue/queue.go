@@ -4,6 +4,7 @@ import (
 	"fmt"
 	io "../driver"
 	."../struct"
+	"../network"
 )
 
 const (
@@ -97,11 +98,12 @@ func OrderCompleted(floor int) {
 		elevator.DownOrders[floor] = false
 		if myIP == IP {
 			elevator.CommandOrders[floor] = false
+			io.ClearButtonLed(floor,COMMAND)
+
 		}
 	}
 	io.ClearButtonLed(floor,UP)
 	io.ClearButtonLed(floor,DOWN)
-	io.ClearButtonLed(floor,COMMAND)
 } //TODO: send en beskjed til nettverket om at en ordre har blitt fjernet.
 
 func NextDirection() int {
@@ -248,17 +250,15 @@ func addInternalOrder(newOrder Order) string{
 	return ""
 }
 
-func addExternalOrder(newOrder Order){
+func addExternalOrder(upOrderChan chan int, downOrderChan chan int,newOrder Order){
 
 	if isIdenticalOrder(newOrder) == false {
 
 		if newOrder.Type == UP {
-			io.SetButtonLed(newOrder.Floor,newOrder.Type)
-			elevators[myIP].UpOrders[newOrder.Floor]=true
+			upOrderChan<-newOrder.Floor
 		}else if newOrder.Type == DOWN {
-			io.SetButtonLed(newOrder.Floor,newOrder.Type)
-			elevators[myIP].DownOrders[newOrder.Floor]=true
-		}	
+			downOrderChan<-newOrder.Floor
+		}
 	}
 }
 
@@ -280,11 +280,11 @@ func addExternalOrder(newOrder Order){
 /*
 
 type Message struct {
-	MessageType string //neworder,just arrived, status update, completed order,
+	MessageType string //newOrder,statusUpdate,completedOrder,acknowledge,newElevator
 	SenderIP    string
+	ReceiverIP	string
 	Elevators   map[string]Elevator
-	ThisFloor   Order  //Bruker denne til å dele kort informasjon. Gå dit, jeg har kommet hit OSV. 
-
+	ThisFloor   Order
 }
 
 type Order struct {
@@ -304,14 +304,42 @@ type Elevator struct {
 */
 
 
-func StatusDecoder(toGet chan Message){
+func StatusDecoder(upOrderChan chan int,downOrderChan chan int,toGet chan Message,toPass chan Message){
+	for{
+		RxMessage := <-toGet
+		//fmt.Println(string(RxMessage))
 
-	RxMessage := <-toGet
+		if RxMessage.MessageType == "newOrder" {
+			addExternalOrder(upOrderChan,downOrderChan,RxMessage.ThisFloor)		
+		}else if RxMessage.MessageType == "statusUpdate" {
+			
+		}else if RxMessage.MessageType == "completedOrder" {
+			
+		}else if RxMessage.MessageType == "acknowledge" {
+			send := Message{
+			MessageType: "acknowledge",
+			SenderIP: network.GetIP(),
+			ReceiverIP: RxMessage.SenderIP,
+			Elevators: nil,
+			ThisFloor: Order{
+					Type:  -1,
+					Floor: -1,
+					},
+			}
+			toPass <- send
 
-	//fmt.Println(string(RxMessage))
-	if RxMessage.MessageType == "newOrder" {
-		addExternalOrder(RxMessage.ThisFloor)
+		}else if RxMessage.MessageType == "newElevator" {
+			send := Message{
+			MessageType: "statusUpdate",
+			SenderIP: network.GetIP(),
+			ReceiverIP: RxMessage.SenderIP,
+			Elevators: elevators,
+			ThisFloor: Order{
+					Type:  -1,
+					Floor: -1,
+					},
+			}
+			toPass <- send
+		}
 	}
-	
-
 }

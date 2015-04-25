@@ -12,10 +12,10 @@ type Heartbeat struct {
 }
 
 type Message struct {
-	MessageType string //neworder,just arrived, status update, completed order,
+	MessageType string //newOrder,just arrived, status update, completed order,
 	SenderIP    string
 	ReceiverIP	string
-	Elevators   map[string]Elevator
+	Elevators   map[string]*Elevator
 	ThisFloor   Order
 }
 
