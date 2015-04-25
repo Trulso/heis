@@ -86,7 +86,6 @@ func UDPRx(rx chan []byte ,port int){
 		}
 		
 		buffer = buffer[:n]
-		fmt.Println("Motar",string(buffer))
 		rx <- buffer
 		socket.Close()	
 	}
@@ -99,7 +98,6 @@ func UDPTx(tx chan []byte,port int)  {
 	for{
 		socket := UDPDial(port)
 		dummy := <- tx
-		fmt.Println("Sender",string(dummy))
 		socket.SetWriteDeadline(time.Now().Add(10*time.Second))
 		_,error := socket.Write(dummy)
 		if error !=nil{
@@ -166,14 +164,11 @@ func SendStatus(toPass chan Message){
 	go UDPTx(send,StatusPort)
 	
 	for{
-		fmt.Println("SO MANY BUGS")
 		toPassBs,error := json.Marshal(<-toPass)
 		if error !=nil{
 			fmt.Println("error:", error)
 		}
-		fmt.Println("SO MANY BUGS")
 		send<-toPassBs
-		fmt.Println("SO MANY BUGS")
 	}
 
 }
@@ -188,19 +183,14 @@ func StatusTransceiver(toPass chan Message,toGet chan Message){
 
 	
 	for{
-		fmt.Println("RXStatus1")
 		RxMessageBs:=<-receive
-		fmt.Println("RXStatus2")
 		RxMessage := Message{}
 		fmt.Println(string(RxMessageBs))
-		fmt.Println("RXStatus3")
 	 	error := json.Unmarshal(RxMessageBs,&RxMessage)
 		if error !=nil{
 			fmt.Println("error:", error)
 		}
-		fmt.Println("RXStatus4")
 		toGet<-RxMessage
-		fmt.Println("RXStatus5")
 	}
 
 
