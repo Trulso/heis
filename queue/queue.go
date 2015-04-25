@@ -307,7 +307,7 @@ type Elevator struct {
 func StatusDecoder(toGet chan Message){
 
 	RxMessage := <-toGet
-
+	fmt.Println("EVER INNNNNNNNNNNNNNNNNNNNNNNNNNNNN")
 	if RxMessage.MessageType == "newOrder" {
 		addExternalOrder(RxMessage.ThisFloor)
 

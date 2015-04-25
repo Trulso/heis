@@ -76,7 +76,7 @@ func UDPRx(rx chan []byte ,port int){
 	socket := UDPListen(port)
 
 	for{
-		socket.SetReadDeadline(time.Now().Add(10*time.Second)) //ingen aktivitet på net i løpet av 10s, noe er feil ?=
+		//socket.SetReadDeadline(time.Now().Add(10*time.Second)) //ingen aktivitet på net i løpet av 10s, noe er feil ?=
 		buffer := make([]byte,1024)
 		n,_,error := socket.ReadFromUDP(buffer) 
 		
@@ -85,7 +85,7 @@ func UDPRx(rx chan []byte ,port int){
 		}
 		
 		buffer = buffer[:n]
-		fmt.Println(string(buffer))
+		fmt.Println("MOTAR:",string(buffer))
 		rx <- buffer
 	}
 
@@ -99,7 +99,7 @@ func UDPTx(tx chan []byte,port int)  {
 		
 		dummy := <- tx
 		socket.SetWriteDeadline(time.Now().Add(10*time.Second))
-		fmt.Println(string(dummy))
+		fmt.Println("SENDER:",string(dummy))
 		_,error := socket.Write(dummy)
 		if error !=nil{
 			fmt.Println("error:", error)
@@ -113,7 +113,6 @@ func SendHeartBeat(){
 	go UDPTx(send,HeartBeatPort)
 
 	for{
-		fmt.Println("trying to beat")
 		myBeat := Heartbeat{GetIP(),time.Now()}
 		myBeatBs,error := json.Marshal(myBeat)
 		
@@ -187,7 +186,7 @@ func StatusTransceiver(toPass chan Message,toGet chan Message){
 	for{
 		RxMessageBs:=<-receive
 		RxMessage := Message{}
-		fmt.Println("Hallo")
+		fmt.Println(string(RxMessageBs))
 
 	 	error := json.Unmarshal(RxMessageBs,&RxMessage)
 		if error !=nil{
