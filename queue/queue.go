@@ -3,6 +3,7 @@ package queue
 import (
 	"fmt"
 	io "../driver"
+	."../struct"
 )
 
 const (
@@ -17,24 +18,6 @@ const (
 	STOP = 0
 )
 
-type Message struct {
-	MessageType string //neworder,just arrived, status update, completed order,
-	SenderIP    string
-	elevators   map[string]Elevator
-}
-
-type Order struct {
-	Type  int
-	Floor int
-}
-
-type Elevator struct {
-	Direction       int
-	LastPassedFloor int
-	UpOrders        []bool
-	DownOrders      []bool
-	CommandOrders   []bool
-}
 var elevators = map[string]*Elevator{}
 var myIP string ="myIP" 
 var elev = Elevator{1,0,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
@@ -200,51 +183,13 @@ func isIdenticalOrder(newOrder Order) bool {
 	}
 	return false
 } //Ferdig
-/*
-func addInternalOrder(newOrder Order) string{
-	if isIdenticalOrder(newOrder) {
-		return ""
-	}
-	defer func() {
-		fmt.Println("Her sender vi ordre oppdatring til alle")
-		io.SetButtonLed(newOrder.Floor,newOrder.Type)
-	}()
-	if newOrder.Type == COMMAND {
-		elevators[myIP].CommandOrders[newOrder.Floor]=true
-		if elevators[myIP].LastPassedFloor == newOrder.Floor {
-			return "sameFloor" 
-		}
-		return ""
-	}
-	cheapestElevator := findCheapestElevator(newOrder)
-	if cheapestElevator == myIP{
-		if newOrder.Floor == elevators[myIP].LastPassedFloor {
-			return "sameFloor" 
-		}else if isQueueEmpty(myIP){
-			return "empty"
-		}
-	}
 
-	for IP, Elevator := range elevators {
-		if IP == cheapestElevator{
-			if newOrder.Type == UP {
-				Elevator.UpOrders[newOrder.Floor]=true
-			}else{
-				Elevator.DownOrders[newOrder.Floor]=true
-			}
-		}
-	}
-
-	fmt.Println("Kom helt til enden")
-	return ""
-}*/ //Bør skrives om for å kunne vite om det var en tom kø, eller om det var en bestilling i samme etg.
-//Må også sende alt till nettet.
 
 func findCheapestElevator(newOrder Order) string {
 	cheapestElevator := myIP
 	minCost := 9999
-	for IP, Elevator := range elevators {
-		cost := costFunction(Elevator, newOrder)
+	for IP, Ele := range elevators {
+		cost := costFunction(Ele, newOrder)
 		if cost < minCost {
 			cheapestElevator = IP
 		}
@@ -281,14 +226,14 @@ func addInternalOrder(newOrder Order) string{
 
 	cheapestElevator := findCheapestElevator(newOrder)
 	FirstOrder:= isQueueEmpty(myIP)
-	for IP, Elevator := range elevators {
+	for IP, Ele := range elevators {
 		if IP == cheapestElevator{
 			if newOrder.Type == UP {
-				Elevator.UpOrders[newOrder.Floor]=true
+				Ele.UpOrders[newOrder.Floor]=true
 			}else if newOrder.Type == DOWN {
-				Elevator.DownOrders[newOrder.Floor]=true
+				Ele.DownOrders[newOrder.Floor]=true
 			}else{
-				Elevator.CommandOrders[newOrder.Floor]=true
+				Ele.CommandOrders[newOrder.Floor]=true
 			}
 		}
 	}
@@ -301,5 +246,71 @@ func addInternalOrder(newOrder Order) string{
 	}
 	fmt.Println("Kom helt til enden")
 	return ""
-} //Bør skrives om for å kunne vite om det var en tom kø, eller om det var en bestilling i samme etg.
+}
+
+func addExternalOrder(newOrder Order){
+
+	if isIdenticalOrder(newOrder) == false {
+
+		if newOrder.Type == UP {
+			io.SetButtonLed(newOrder.Floor,newOrder.Type)
+			elevators[myIP].UpOrders[newOrder.Floor]=true
+		}else if newOrder.Type == DOWN {
+			io.SetButtonLed(newOrder.Floor,newOrder.Type)
+			elevators[myIP].DownOrders[newOrder.Floor]=true
+		}	
+	}
+}
+
+ //Bør skrives om for å kunne vite om det var en tom kø, eller om det var en bestilling i samme etg.
 //Må også sende alt till nettet.
+
+
+//Do this order
+//Elevater X update
+//I have done this Floor (remove exterior)
+//Acknowlage
+//I am a new elevator!
+
+// queue funksjoner som er nyttig :
+// func addInternalOrder(newOrder Order) string{
+// func AddElevator(newElevator Elevator, IP string) {
+//func OrderCompleted(floor int) {
+
+/*
+
+type Message struct {
+	MessageType string //neworder,just arrived, status update, completed order,
+	SenderIP    string
+	Elevators   map[string]Elevator
+	ThisFloor   Order  //Bruker denne til å dele kort informasjon. Gå dit, jeg har kommet hit OSV. 
+
+}
+
+type Order struct {
+	Direction int
+	Floor     int
+}
+
+type Elevator struct {
+	Direction       int
+	LastPassedFloor int
+	UpOrders        []bool
+	DownOrders      []bool
+	CommandOrders   []bool
+}
+
+
+*/
+
+
+func StatusDecoder(toGet chan Message){
+
+	RxMessage := <-toGet
+
+	if RxMessage.MessageType == "newOrder" {
+		addExternalOrder(RxMessage.ThisFloor)
+
+	}
+
+}

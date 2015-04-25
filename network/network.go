@@ -5,6 +5,7 @@ import (
 	"net"
 	"encoding/json"
 	"time"
+	."../struct"
 	//"os"
 )
 
@@ -18,30 +19,6 @@ const(
 
 )
 
-
-type Heartbeat struct {
-		Id string
-		Time time.Time
-}
-
-type Message struct {
-	MessageType string //neworder,just arrived, status update, completed order,
-	SenderIP    string
-	elevators   map[string]Elevator
-}
-
-type Order struct {
-	Direction int
-	Floor     int
-}
-
-type Elevator struct {
-	Direction       int
-	LastPassedFloor int
-	UpOrders        []bool
-	DownOrders      []bool
-	CommandOrders   []bool
-}
 
 
 

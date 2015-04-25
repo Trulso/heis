@@ -2,27 +2,48 @@ package main
 	
 
 import (
-	"fmt"
-	."./network"
-	//."time"
+	//"fmt"
+	"./network"
+	"time"
+	."./struct"
 )
 
 func main() {
 	
-	fmt.Println(GetIP())
+	toPass := make(chan Message)
+	toGet := make(chan Message)
 
 
-	// myc := make (chan []byte)
+	go network.StatusTransceiver(toPass,toGet)
 
 
-	// go UDPRx(myc,30003)
+	for{
+			send := Message{
+			MessageType: "newOrder",
+			SenderIP: network.GetIP(),
+			Elevators: nil,
+			ThisFloor: Order{
+						Type: 1,
+						Floor: 4,
+						},
+			}
+			toPass <- send
 
+			time.Sleep(20*time.Second)
 
-	// for{
-	// 	rx := make([]byte,1024)
-	// 	rx  = <- myc
-	// 	Printf(string(rx))
-	// }
-
+		}
 }
 
+/*
+type Message struct {
+	MessageType string //neworder,just arrived, status update, completed order,
+	SenderIP    string
+	Elevators   map[string]Elevator
+	ThisFloor   Order
+}
+
+type Order struct {
+	Type  int
+	Floor int
+}
+*/
