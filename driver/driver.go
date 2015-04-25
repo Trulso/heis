@@ -22,7 +22,15 @@ func Init() int {
 		fmt.Println("Hardware init failed!")
 		return -1
 	}
-	
+
+	SetMotorDir(-1)
+	for {
+		if(Io_read_bit(SENSOR_FLOOR1) == 1){
+			SetMotorDir(0)
+			break
+		}
+		time.Sleep(1*time.Millisecond)
+	}
 
 	for i := 0; i < 16; i++ {
 		Io_clear_bit(0x300+i)
@@ -44,7 +52,7 @@ func SetFloorIndicator(floor int) {
     }else {
         Io_clear_bit(LIGHT_FLOOR_IND2)
     }
-}
+}//Ferdig
 
 func SetButtonLed(floor int,button int){
 	if(floor<=N_FLOORS){
@@ -74,10 +82,9 @@ func SetButtonLed(floor int,button int){
 			Io_set_bit(LIGHT_DOWN4)
 		}
 	}
-}
+}//Ferdig
 
 func ClearButtonLed(floor int,button int){
-
 	if button == COMMAND {
 		Io_clear_bit(LIGHT_COMMAND1-floor)
 	}
@@ -94,16 +101,16 @@ func ClearButtonLed(floor int,button int){
 	}
 	if button == DOWN {
 		if floor == 1 {
-			Io_clear_bit(LIGHT_DOWN1)
-		}
-		if floor == 2 {
 			Io_clear_bit(LIGHT_DOWN2)
 		}
-		if floor == 3 {
+		if floor == 2 {
 			Io_clear_bit(LIGHT_DOWN3)
 		}
+		if floor == 3 {
+			Io_clear_bit(LIGHT_DOWN4)
+		}
 	}
-}
+}//Ferdig
 
 func SetDoorLamp(value int) {
 	if (value) > 0 {
@@ -111,7 +118,7 @@ func SetDoorLamp(value int) {
 	}else{
         Io_clear_bit(LIGHT_DOOR_OPEN)
     }	
-}
+}//Ferdig
 
 func SetStopLamp(value int) {
 	if (value) > 0{
@@ -163,7 +170,7 @@ func OrderButtonPolling(commandOrdersChan chan int,upOrdersChan chan int, downOr
 				buttonPressed[button] = false
 			}
 		}
-		time.Sleep(1*time.Millisecond)		
+		time.Sleep(10*time.Millisecond)		
 	}
 }//Ferdig
 
@@ -187,7 +194,7 @@ func FloorSensorPolling(floorSensorChan chan int){
 
 
 
-/*Funksjoner under ser ikke langre brukt
+/*Funksjoner under er ikke langre brukt
 */
 func GetFloorSensorSignal() int {
 	if Io_read_bit(SENSOR_FLOOR1) == 1{

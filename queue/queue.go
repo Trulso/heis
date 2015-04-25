@@ -76,11 +76,11 @@ func isIdenticalOrder(newOrder Order) bool {
 	return false
 }//Ferdig
 
-func addOrder(newOrder Order) {
+func addInternalOrder(newOrder Order) {
 	if isIdenticalOrder(newOrder) {
 		return
 	}
-defer func(){/* Send Oppdateringen til alle sammen*/}()
+defer func(){fmt.Println("Her sender vi ordre oppdatring til alle")}()
 	if newOrder.Type == COMMAND {
 		elevator[myIP].CommandOrders[newOrder.floor]
 		return
@@ -97,7 +97,7 @@ defer func(){/* Send Oppdateringen til alle sammen*/}()
 		 }
 	}
 	return
-
+}//Lag Defer, skal ellers være ferdig. Sett på lys.
 
 func costFunction(elevator Elevator, newOrder Order) int {
 	cost := 0
@@ -110,16 +110,36 @@ func costFunction(elevator Elevator, newOrder Order) int {
 		}
 	}
 	return 1
-}
+}//Ikke laget ennå.
 
 func ShouldStop(floor int) bool {
-	if elevators[myIP].CommandOrders[floor] || elevators[myIP].
-
+	elevators[myIP].LastPassedFloor=floor
+	if elevators[myIP].CommandOrders[floor]{
+		return true
+	}
+	if elevators[myIP].Direction == UP {
+		if elevators[myIP].UpOrders[floor] || floor == N_FLOORS-1 {
+			return true
+		}else if ordersAbove(myIP){
+			return false
+		}else{
+			return true
+		}
+	}else if elevators[myIP].Direction == DOWN {
+		if elevators[myIP].DownOrders[floor] || floor == 0 {
+			return true
+		}else if ordersBellow(myIP){
+			return false
+		}else{
+			return true
+		}
+	}
+	return true
 }
 
 func AddElevator(newElevator Elevator, IP string) {
 	elevators[IP] = &newElevator
-}
+}//Ferdig
 
 func OrderCompleted(floor int) {
 	for IP, elevator := range elevators {
@@ -128,25 +148,28 @@ func OrderCompleted(floor int) {
 		if myIP == IP {
 			elevator.CommandOrders[floor] = false
 		}
-	}
-	//TODO: send en beskjed til netverket om at en ordre har blitt fjernet.
-}
+	}	
+}//TODO: send en beskjed til nettverket om at en ordre har blitt fjernet.
 
 func NextDirection() int {
 	if elevators[myIP].Direction == UP {
 		if ordersAbove() {
+			elevators[myIP].Direction = UP
 			return UP
 		}else if ordersBellow() {
+			elevators[myIP].Direction = DOWN
 			return DOWN
 		}
 	} else if elevators[myIP].Direction == DOWN {
 		if ordersBellow() {
+			elevators[myIP].Direction = DOWN
 			return DOWN
 		}else if ordersAbove() {
+			elevators[myIP].Direction = UP
 			return UP
 		}
 	}
-}
+}//Utvid til å sjekke andre sine bestillingskøer
 
 func ordersAbove(IP string) bool{
 	for floor := elevators[IP].LastPassedFloor + 1; floor < N_FLOORS; floor++ {

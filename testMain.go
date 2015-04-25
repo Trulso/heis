@@ -8,7 +8,12 @@ import(
 
 
 )
-const N_FLOORS = 4
+const (
+	N_FLOORS = 4
+	UP=1
+	DOWN=-1
+	)
+
 type Elevator struct {
 	Direction int
 	LastPassedFloor int
@@ -20,13 +25,10 @@ type Elevator struct {
 // var myIP = //SKaff lokalIPadresse
 var elevators = map[string]*Elevator{}
 var myIP = "IP1"
-var elev1 = Elevator{1,1,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
-var elev2 = Elevator{1,2,[]bool{false,false,true,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
+var elev1 = Elevator{1,1,[]bool{false,false,false,false},[]bool{false,true,false,false},[]bool{false,false,false,false}}
+var elev2 = Elevator{1,2,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
 
 func main(){
-	ButtonPressed := make([]int, 10)
-	ButtonPressed[2]=10
-	fmt.Println(ButtonPressed)
 
  	elevators["IP1"] = &elev1
  	elevators["IP2"] = &elev2
@@ -46,9 +48,10 @@ func main(){
 	elevators["IP1"].LastPassedFloor = 0
 	fmt.Println(ordersAbove())
 */
-	fmt.Println("preprint", elevators["IP1"].UpOrders)
-	turnUpQueueFull("IP1")
-	fmt.Println("postprint", elevators["IP1"].UpOrders)
+	fmt.Println(ShouldStop(0))
+	elevators["IP1"].UpOrders[2]=true
+	fmt.Println(ShouldStop(1))
+	fmt.Println(ShouldStop(2))
 
 	doorTimer := time.NewTimer(1000*time.Millisecond)
 	<-doorTimer.C
@@ -102,4 +105,29 @@ func turnUpQueueFull(IP string){
 		elevators[IP].UpOrders[i]=true
 	}
 
+}
+
+func ShouldStop(floor int) bool {
+	elevators[myIP].LastPassedFloor=floor
+	if elevators[myIP].CommandOrders[floor]{
+		return true
+	}
+	if elevators[myIP].Direction == UP {
+		if elevators[myIP].UpOrders[floor] || floor == N_FLOORS-1 {
+			return true
+		}else if ordersAbove(myIP){
+			return false
+		}else{
+			return true
+		}
+	}else if elevators[myIP].Direction == DOWN {
+		if elevators[myIP].DownOrders[floor] || floor == 0 {
+			return true
+		}else if ordersBellow(myIP){
+			return false
+		}else{
+			return true
+		}
+	}
+	return true
 }
