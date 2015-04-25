@@ -32,3 +32,5 @@ func main() {
 	<-dontEndChan
 	fmt.Println("Dette bor ikke skrives ut")
 }
+
+https://github.com/Trulso/heis.git
