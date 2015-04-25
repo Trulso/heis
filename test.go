@@ -16,8 +16,8 @@ func sendorder(toPass chan Message){
 		ReceiverIP: "",
 		Elevators: nil,
 		ThisFloor: Order{
-					Type: -1,
-					Floor: 3,
+					Type:  1,
+					Floor: 2,
 					},
 		}
 		time.Sleep(10*time.Second)

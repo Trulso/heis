@@ -62,7 +62,6 @@ func UDPListen(port int) *net.UDPConn {
 		fmt.Println("error:", error)		
 	}
 
-
 	socket,error:=net.ListenUDP("udp",local)
 	if error !=nil{
 		fmt.Println("error:", error)	
@@ -152,6 +151,7 @@ func HeartbeatTransceiver(newElevator chan string,deadElevator chan string) {
 		for i,t := range heartbeats {
 			dur := time.Since(*t)
 			if dur.Seconds() > 1 {
+				fmt.Println("Waring:",dur)
 				deadElevator <- i
 				delete(heartbeats,i)
 			}
