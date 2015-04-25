@@ -3,7 +3,8 @@ package main
 import (
          "fmt"
          "./network"
-         //"time"
+         "time"
+		."./struct"         
  )
 
 
