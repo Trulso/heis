@@ -266,43 +266,6 @@ func addExternalOrder(upOrderChan chan int, downOrderChan chan int,newOrder Orde
 //Må også sende alt till nettet.
 
 
-//Do this order
-//Elevater X update
-//I have done this Floor (remove exterior)
-//Acknowlage
-//I am a new elevator!
-
-// queue funksjoner som er nyttig :
-// func addInternalOrder(newOrder Order) string{
-// func AddElevator(newElevator Elevator, IP string) {
-//func OrderCompleted(floor int) {
-
-/*
-
-type Message struct {
-	MessageType string //newOrder,statusUpdate,completedOrder,acknowledge,newElevator
-	SenderIP    string
-	ReceiverIP	string
-	Elevators   map[string]Elevator
-	ThisFloor   Order
-}
-
-type Order struct {
-	Direction int
-	Floor     int
-}
-
-type Elevator struct {
-	Direction       int
-	LastPassedFloor int
-	UpOrders        []bool
-	DownOrders      []bool
-	CommandOrders   []bool
-}
-
-
-*/
-
 
 func StatusDecoder(upOrderChan chan int,downOrderChan chan int,toGet chan Message,toPass chan Message){
 	for{
@@ -312,8 +275,12 @@ func StatusDecoder(upOrderChan chan int,downOrderChan chan int,toGet chan Messag
 		if RxMessage.MessageType == "newOrder" {
 			addExternalOrder(upOrderChan,downOrderChan,RxMessage.ThisFloor)		
 		}else if RxMessage.MessageType == "statusUpdate" {
+
+
 			
 		}else if RxMessage.MessageType == "completedOrder" {
+
+
 			
 		}else if RxMessage.MessageType == "acknowledge" {
 			send := Message{
