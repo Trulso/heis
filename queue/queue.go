@@ -308,7 +308,7 @@ func StatusDecoder(toGet chan Message){
 
 	RxMessage := <-toGet
 
-	fmt.Println(string(RxMessage))
+	//fmt.Println(string(RxMessage))
 	if RxMessage.MessageType == "newOrder" {
 		addExternalOrder(RxMessage.ThisFloor)
 	}

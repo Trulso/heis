@@ -149,7 +149,7 @@ func HeartbeatTransceiver(newElevator chan string,deadElevator chan string) {
 
 		for i,t := range heartbeats {
 			dur := time.Since(*t)
-			if dur.Seconds() > 1 {
+			if dur.Seconds() > 3 {
 				deadElevator <- i
 				delete(heartbeats,i)
 			}

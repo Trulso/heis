@@ -31,15 +31,17 @@ func main() {
 			default: 
 
 		 }
+
 		send := Message{
 		MessageType: "newOrder",
 		SenderIP: network.GetIP(),
 		Elevators: nil,
 		ThisFloor: Order{
 					Type: -1,
-					Floor:
+					Floor: 3,
 					},
 		}
+
 		toPass <- send
 		time.Sleep(1*time.Second)
 
