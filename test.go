@@ -22,6 +22,7 @@ func sendorder(toPass chan Message){
 		}
 		time.Sleep(10*time.Second)
 		toPass <- send
+		fmt.Println("Sender")
 		
 	}
 }
