@@ -120,7 +120,7 @@ func SendHeartBeat(){
 			fmt.Println("error:", error)
 		}
 	 	send <- myBeatBs
-	 	time.Sleep(300*time.Millisecond)
+	 	time.Sleep(100*time.Millisecond)
 	}
 }
 
