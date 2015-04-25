@@ -190,7 +190,7 @@ func StatusTransceiver(toPass chan Message,toGet chan Message){
 		if error !=nil{
 			fmt.Println("error:", error)
 		}
-		if RxMessage.SenderIP != GetIP() || RxMessage.ReceiverIP == GetIP() ||  RxMessage.ReceiverIP == "" {
+		if RxMessage.SenderIP != GetIP() && (RxMessage.ReceiverIP == GetIP() ||  RxMessage.ReceiverIP == "") {
 			toGet<-RxMessage
 		}
 	}
