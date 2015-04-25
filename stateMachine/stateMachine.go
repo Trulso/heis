@@ -13,7 +13,7 @@ const (
 	MOVING    = 2
 )
 
-func Init(FloorReachedChan chan int, OrderOnSameFloor chan int) {
+func Init(floorReachedChan chan int, orderOnSameFloorChan chan int, orderInEmptyQueueChan chan int) {
 	fmt.Printf("Initializing the state machine.\n")
 	state := IDLE
 
@@ -23,7 +23,7 @@ func Init(FloorReachedChan chan int, OrderOnSameFloor chan int) {
 	fmt.Printf("Initializing complete. Running state machine.\n")
 	for {
 		select {
-		case floor := <-FloorReachedChan:
+		case floor := <-floorReachedChan:
 			io.SetFloorIndicator(floor)
 			switch state {
 			case MOVING:
@@ -35,7 +35,7 @@ func Init(FloorReachedChan chan int, OrderOnSameFloor chan int) {
 					queue.OrderCompleted(floor)
 				}
 			}
-		case direction := <-OrderOnSameFloor:
+		case floor := <-orderOnSameFloorChan:
 			switch state {
 			case IDLE:
 				doorTimer.Reset(3 * time.Second)
@@ -46,16 +46,27 @@ func Init(FloorReachedChan chan int, OrderOnSameFloor chan int) {
 				doorTimer.Reset(3 * time.Second)
 				queue.OrderCompleted(floor)
 			}
+		case floor := <-orderInEmptyQueueChan:
+			if state == IDLE {
+				io.SetDoorLamp(0)
+				direction := queue.NextDirection()
+				if direction == 0 {
+					state = IDLE
+				} else {
+					io.SetMotorDir(direction)
+					state = MOVING
+				}
+			}
 		case <-doorTimer.C:
 			switch state {
 			case DOOR_OPEN:
 				io.SetDoorLamp(0)
 				direction := queue.NextDirection()
 				if direction == 0 {
-					state=IDLE
-				}else {
+					state = IDLE
+				} else {
 					io.SetMotorDir(direction)
-					state=MOVING
+					state = MOVING
 				}
 			}
 		}

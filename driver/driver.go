@@ -151,6 +151,7 @@ func SetMotorDir(dir int) {
 }//Ferdig
 
 func OrderButtonPolling(commandOrdersChan chan int,upOrdersChan chan int, downOrdersChan chan int){
+	fmt.Println("Na starter pollinga av buttons")
 	buttons := [3*N_FLOORS-2]int{BUTTON_COMMAND1,BUTTON_COMMAND2,BUTTON_COMMAND3,BUTTON_COMMAND4,BUTTON_UP1,BUTTON_UP2,BUTTON_UP3,BUTTON_DOWN2,BUTTON_DOWN3,BUTTON_DOWN4}
 	buttonPressed := make([]bool, 3*N_FLOORS-2)
 	for {
@@ -175,6 +176,7 @@ func OrderButtonPolling(commandOrdersChan chan int,upOrdersChan chan int, downOr
 }//Ferdig
 
 func FloorSensorPolling(floorSensorChan chan int){
+	fmt.Println("Naa starter pollinga av etg")
 	pushed := make([]bool, N_FLOORS)
 	for {
 		for floor := SENSOR_FLOOR1; floor < SENSOR_FLOOR4+1; floor++{
@@ -194,7 +196,7 @@ func FloorSensorPolling(floorSensorChan chan int){
 
 
 
-/*Funksjoner under er ikke langre brukt
+/*Funksjoner under er ikke lenger brukt
 */
 func GetFloorSensorSignal() int {
 	if Io_read_bit(SENSOR_FLOOR1) == 1{
