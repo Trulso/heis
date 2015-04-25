@@ -48,8 +48,6 @@ func main() {
 			default: 
 
 		 }
-		 temp := <- toGet
-		 fmt.Println(temp.MessageType,"from",temp.SenderIP)
 
 	}
 }

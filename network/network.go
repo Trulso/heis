@@ -13,8 +13,8 @@ import (
 const(
 
 	elevatorDead = 1000000000
-	HeartBeatPort = 30123
-	StatusPort = 	30223
+	HeartBeatPort = 30133
+	StatusPort = 	30233
 
 
 )
