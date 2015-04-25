@@ -87,7 +87,7 @@ func UDPRx(rx chan []byte ,port int){
 		buffer = buffer[:n]
 		rx <- buffer
 	}
-
+	defer socket.Close()
 }
 
 func UDPTx(tx chan []byte,port int)  {
@@ -103,6 +103,7 @@ func UDPTx(tx chan []byte,port int)  {
 			fmt.Println("error:", error)
 		}	
 	}	
+	defer socket.Close()
 }
 
 

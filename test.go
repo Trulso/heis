@@ -21,7 +21,6 @@ func sendorder(toPass chan Message){
 	}
 
 	toPass <- send
-	
 	time.Sleep(1*time.Second)
 
 }
@@ -49,6 +48,8 @@ func main() {
 			default: 
 
 		 }
+		 temp := <- toGet
+		 fmt.Println(temp.MessageType,"from",temp.SenderIP)
 
 	}
 }
