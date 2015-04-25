@@ -8,6 +8,23 @@ import (
  )
 
 
+func sendorder(toPass chan Message){
+
+	send := Message{
+	MessageType: "newOrder",
+	SenderIP: network.GetIP(),
+	Elevators: nil,
+	ThisFloor: Order{
+				Type: -1,
+				Floor: 3,
+				},
+	}
+
+	toPass <- send
+	time.Sleep(5*time.Second)
+
+}
+
 func main() {
 
 	newEle := make (chan string)
@@ -31,20 +48,8 @@ func main() {
 			default: 
 
 		 }
-
-		send := Message{
-		MessageType: "newOrder",
-		SenderIP: network.GetIP(),
-		Elevators: nil,
-		ThisFloor: Order{
-					Type: -1,
-					Floor: 3,
-					},
-		}
-
-		toPass <- send
-		fmt.Println(<-toGet)
-		time.Sleep(1*time.Second)
-
+		 temp := <-toGet
+		 fmt.Println("hallo?")
+		 fmt.Println(temp.MessageType, "from:",temp.SenderIP)
 	}
 }

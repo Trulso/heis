@@ -149,7 +149,7 @@ func HeartbeatTransceiver(newElevator chan string,deadElevator chan string) {
 
 		for i,t := range heartbeats {
 			dur := time.Since(*t)
-			if dur.Seconds() > 3 {
+			if dur.Seconds() > 1 {
 				deadElevator <- i
 				delete(heartbeats,i)
 			}
@@ -183,7 +183,7 @@ func StatusTransceiver(toPass chan Message,toGet chan Message){
 	for{
 		RxMessageBs:=<-receive
 		RxMessage := Message{}
-		fmt.Println(string(RxMessageBs))
+		//fmt.Println(string(RxMessageBs))
 	 	error := json.Unmarshal(RxMessageBs,&RxMessage)
 		if error !=nil{
 			fmt.Println("error:", error)
