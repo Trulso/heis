@@ -20,7 +20,7 @@ const (
 )
 
 var elevators = map[string]*Elevator{}
-var myIP string ="myIP" 
+var myIP string =network.GetIP() 
 var elev = Elevator{1,0,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
 
 func Init(upOrderChan chan int, downOrderChan chan int, commandOrderChan chan int, orderOnSameFloorChan chan int, orderInEmptyQueueChan chan int) {
@@ -88,11 +88,11 @@ func ShouldStop(floor int) bool {
 	return true
 }//Ferdig
 
-func AddElevator(newElevator Elevator, IP string) {
-	elevators[IP] = &newElevator
+func AddElevator(newElevator *Elevator, IP string) {
+	elevators[IP] = newElevator
 } //Ferdig
 
-func OrderCompleted(floor int) {
+func OrderCompleted(floor int,byWho string,toPass chan Message) {
 	for IP, elevator := range elevators {
 		elevator.UpOrders[floor] = false
 		elevator.DownOrders[floor] = false
@@ -104,7 +104,12 @@ func OrderCompleted(floor int) {
 	}
 	io.ClearButtonLed(floor,UP)
 	io.ClearButtonLed(floor,DOWN)
-} //TODO: send en beskjed til nettverket om at en ordre har blitt fjernet.
+	if byWho == network.GetIP() {
+		SendOrderCompleted(toPass,floor)
+
+	}
+}
+
 
 func NextDirection() int {
 	fmt.Println("Vi skal finne neste retning")
@@ -276,12 +281,12 @@ func StatusDecoder(upOrderChan chan int,downOrderChan chan int,toGet chan Messag
 			addExternalOrder(upOrderChan,downOrderChan,RxMessage.ThisFloor)		
 		}else if RxMessage.MessageType == "statusUpdate" {
 
-
+			elevators[RxMessage.SenderIP]=RxMessage.Elevators[RxMessage.SenderIP]
 
 			
 		}else if RxMessage.MessageType == "completedOrder" {
 
-			OrderCompleted(RxMessage.ThisFloor.Floor)
+			OrderCompleted(RxMessage.ThisFloor.Floor,RxMessage.SenderIP,toPass)
 
 			
 		}else if RxMessage.MessageType == "acknowledge" {
@@ -298,6 +303,8 @@ func StatusDecoder(upOrderChan chan int,downOrderChan chan int,toGet chan Messag
 			toPass <- send
 
 		}else if RxMessage.MessageType == "newElevator" {
+			AddElevator(RxMessage.Elevators[RxMessage.SenderIP],RxMessage.SenderIP)	
+
 			send := Message{
 			MessageType: "statusUpdate",
 			SenderIP: network.GetIP(),
@@ -311,4 +318,36 @@ func StatusDecoder(upOrderChan chan int,downOrderChan chan int,toGet chan Messag
 			toPass <- send
 		}
 	}
+}
+
+func RequestElevatorStatus(toPass chan Message){
+
+	send := Message{
+	MessageType: "newElevator",
+	SenderIP: network.GetIP(),
+	ReceiverIP: "",
+	Elevators: nil,
+	ThisFloor: Order{
+			Type:  -1,
+			Floor: -1,
+			},
+	}
+	toPass <- send	
+}
+
+func SendOrderCompleted(toPass chan Message,floor int){
+	
+	send := Message{
+	MessageType: "completedOrder",
+	SenderIP: network.GetIP(),
+	ReceiverIP: "",
+	Elevators: elevators,
+	ThisFloor: Order{
+			Type:  -1,
+			Floor: floor,
+			},	
+	}
+	toPass <- send
+
+
 }

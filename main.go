@@ -30,11 +30,12 @@ func main() {
 
 	go network.HeartbeatTransceiver(newElevator,deadElevator)
 	go network.StatusTransceiver(toPass,toGet)
+	fmt.Println("Network started")
 
-
+	queue.RequestElevatorStatus(toPass)
 
 	go queue.Init(upOrdersChan,downOrdersChan,commandOrdersChan,orderOnSameFloorChan,orderInEmptyQueueChan)
-	go stateMachine.Init(floorReachedChan,orderOnSameFloorChan,orderInEmptyQueueChan)
+	go stateMachine.Init(floorReachedChan,orderOnSameFloorChan,orderInEmptyQueueChan,toPass)
 	go queue.StatusDecoder(upOrdersChan,downOrdersChan,toGet,toPass)
 	fmt.Println("Laget en goroutine med queue og FSM")
 
