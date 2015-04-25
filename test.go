@@ -9,20 +9,19 @@ import (
 
 
 func sendorder(toPass chan Message){
-
-	send := Message{
-	MessageType: "newOrder",
-	SenderIP: network.GetIP(),
-	Elevators: nil,
-	ThisFloor: Order{
-				Type: -1,
-				Floor: 3,
-				},
+	for{
+		send := Message{
+		MessageType: "newOrder",
+		SenderIP: network.GetIP(),
+		Elevators: nil,
+		ThisFloor: Order{
+					Type: -1,
+					Floor: 3,
+					},
+		}
+		toPass <- send
+		time.Sleep(10*time.Second)
 	}
-
-	toPass <- send
-	time.Sleep(1*time.Second)
-
 }
 
 func main() {
@@ -48,7 +47,8 @@ func main() {
 			default: 
 
 		 }
-		 fmt.Println(<-toGet)
+		 temp := <-toGet
+		 fmt.Println(temp.MessageType,"from",temp.SenderIP)
 
 	}
 }

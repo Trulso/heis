@@ -186,6 +186,7 @@ func StatusTransceiver(toPass chan Message,toGet chan Message){
 		RxMessageBs:=<-receive
 		RxMessage := Message{}
 		fmt.Println(string(RxMessageBs))
+		fmt.Println("\n")
 	 	error := json.Unmarshal(RxMessageBs,&RxMessage)
 		if error !=nil{
 			fmt.Println("error:", error)
