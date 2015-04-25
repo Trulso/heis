@@ -13,8 +13,8 @@ import (
 const(
 
 	elevatorDead = 1000000000
-	HeartBeatPort = 30103
-	StatusPort = 	30203
+	HeartBeatPort = 30123
+	StatusPort = 	30223
 
 
 )
@@ -149,7 +149,7 @@ func HeartbeatTransceiver(newElevator chan string,deadElevator chan string) {
 
 		for i,t := range heartbeats {
 			dur := time.Since(*t)
-			if dur.Seconds() > 1 {
+			if dur.Seconds() > 3 {
 				deadElevator <- i
 				delete(heartbeats,i)
 			}
@@ -181,16 +181,19 @@ func StatusTransceiver(toPass chan Message,toGet chan Message){
 
 	
 	for{
-		fmt.Println("ka sjer !")
+		fmt.Println("RXStatus1")
 		RxMessageBs:=<-receive
-		fmt.Println("ka sjer !11")
+		fmt.Println("RXStatus2")
 		RxMessage := Message{}
 		fmt.Println(string(RxMessageBs))
+		fmt.Println("RXStatus3")
 	 	error := json.Unmarshal(RxMessageBs,&RxMessage)
 		if error !=nil{
 			fmt.Println("error:", error)
 		}
+		fmt.Println("RXStatus4")
 		toGet<-RxMessage
+		fmt.Println("RXStatus5")
 	}
 
 
