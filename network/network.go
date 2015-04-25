@@ -73,9 +73,10 @@ func UDPListen(port int) *net.UDPConn {
 
 func UDPRx(rx chan []byte ,port int){
 	
-	socket := UDPListen(port)
+
 
 	for{
+		socket := UDPListen(port)
 		//socket.SetReadDeadline(time.Now().Add(10*time.Second)) //ingen aktivitet på net i løpet av 10s, noe er feil ?=
 		buffer := make([]byte,1024)
 		n,_,error := socket.ReadFromUDP(buffer) 
@@ -85,22 +86,26 @@ func UDPRx(rx chan []byte ,port int){
 		}
 		
 		buffer = buffer[:n]
+		fmt.Println(string(buffer))
 		rx <- buffer
+		socket.Close()	
 	}
 }
 
 func UDPTx(tx chan []byte,port int)  {
 	
-	socket := UDPDial(port)
+	
 
 	for{
-		
+		socket := UDPDial(port)
 		dummy := <- tx
+		fmt.Println(string(dummy))
 		socket.SetWriteDeadline(time.Now().Add(10*time.Second))
 		_,error := socket.Write(dummy)
 		if error !=nil{
 			fmt.Println("error:", error)
-		}	
+		}
+		socket.Close()	
 	}	
 }
 
@@ -166,7 +171,9 @@ func SendStatus(toPass chan Message){
 		if error !=nil{
 			fmt.Println("error:", error)
 		}
+		fmt.Println("SO MANY BUGS")
 		send<-toPassBs
+		fmt.Println("SO MANY BUGS")
 	}
 
 }
