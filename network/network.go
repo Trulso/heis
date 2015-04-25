@@ -13,6 +13,7 @@ const(
 
 	elevatorDead = 1000000000
 	HeartBeatPort = 30103
+	StatusPort = 	30203
 
 
 )
@@ -22,6 +23,26 @@ type Heartbeat struct {
 		Id string
 		Time time.Time
 }
+
+type Message struct {
+	MessageType string //neworder,just arrived, status update, completed order,
+	SenderIP    string
+	elevators   map[string]Elevator
+}
+
+type Order struct {
+	Direction int
+	Floor     int
+}
+
+type Elevator struct {
+	Direction       int
+	LastPassedFloor int
+	UpOrders        []bool
+	DownOrders      []bool
+	CommandOrders   []bool
+}
+
 
 
 func GetIP() string {
@@ -78,7 +99,7 @@ func UDPRx(rx chan []byte ,port int){
 	socket := UDPListen(port)
 
 	for{
-		//socket.SetReadDeadline(time.Now().Add(10*time.Second)) //ingen aktivitet på net i løpet av 10s, noe er feil ?=
+		socket.SetReadDeadline(time.Now().Add(10*time.Second)) //ingen aktivitet på net i løpet av 10s, noe er feil ?=
 		buffer := make([]byte,1024)
 		n,_,error := socket.ReadFromUDP(buffer) 
 		
@@ -97,26 +118,20 @@ func UDPTx(tx chan []byte,port int)  {
 	socket := UDPDial(port)
 
 	for{
-		//socket.SetWriteDeadline(time.Now().Add(10*time.Second))
+		socket.SetWriteDeadline(time.Now().Add(10*time.Second))
 		_,error := socket.Write(<- tx)
 		if error !=nil{
 			fmt.Println("error:", error)
 		}
-		time.Sleep(100000000*time.Millisecond)	
+		time.Sleep(30*time.Millisecond)	
 	}	
 }
 
 
-func HeartMonitor(newElevator chan string,deadElevator chan string) {
-	
-	receive := make(chan []byte)
-	send := make(chan []byte)
-	go UDPRx(receive,HeartBeatPort)
+func SendHeartBeat(){
+	send := make(chan []byte,1)
 	go UDPTx(send,HeartBeatPort)
-	
 
-	heartbeats := make(map[string]time.Time)
-	
 	for{
 		myBeat := Heartbeat{GetIP(),time.Now()}
 		myBeatBs,error := json.Marshal(myBeat)
@@ -124,70 +139,23 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 		if error !=nil{
 			fmt.Println("error:", error)
 		}
-	 	
 	 	send <- myBeatBs
-	 	otherBeatBs := <-receive
-	 	
-	 	otherBeat := Heartbeat{}
-	 	error = json.Unmarshal(otherBeatBs,&otherBeat)
-		if error !=nil{
-			fmt.Println("error:", error)
-		}
-		fmt.Println(otherBeat.Id)
-		_,ok := heartbeats[otherBeat.Id]
-		
-		if ok {
-			fmt.Println("beating")
-			heartbeats[otherBeat.Id] = otherBeat.Time
-		}else{
-			fmt.Println("Rett før channel")
-			newElevator <- otherBeat.Id
-			fmt.Println("Rett etter channel")
-			heartbeats[otherBeat.Id] = otherBeat.Time 
-		}
-
-		for i,t := range heartbeats {
-			fmt.Println("Heis på deis")
-			fmt.Println(i)
-			dur := time.Since(t) 
-			if dur.Nanoseconds() > elevatorDead {
-				deadElevator <- i
-				delete(heartbeats,i)
-
-			}
-		}
-
-		time.Sleep(10*time.Millisecond)	
-
-		}	
+	 	time.Sleep(300*time.Millisecond)
 	}
 }
 
-
-func HeartMonitor(newElevator chan string,deadElevator chan string) {
+func HeartbeatTransceiver(newElevator chan string,deadElevator chan string) {
 	
 	receive := make(chan []byte,1)
-	send := make(chan []byte,1)
-	go UDPRx(receive,HeartBeatPort)
-	go UDPTx(send,HeartBeatPort)
-	
-
 	heartbeats := make(map[string]*time.Time)
-	
+	go UDPRx(receive,HeartBeatPort)
+	go SendHeartBeat()
+
 	for{	
-		myBeat := Heartbeat{GetIP(),time.Now()}
-		myBeatBs,error := json.Marshal(myBeat)
-		
-		if error !=nil{
-			fmt.Println("error:", error)
-		}
-		fmt.Println(string(myBeatBs))
-	 	send <- myBeatBs
 	 	otherBeatBs := <-receive
 	 	
 	 	otherBeat := Heartbeat{}
-	 	error = json.Unmarshal(otherBeatBs,&otherBeat)
-	 	fmt.Println(string(otherBeatBs))
+	 	error := json.Unmarshal(otherBeatBs,&otherBeat)
 		if error !=nil{
 			fmt.Println("error:", error)
 		}
@@ -202,29 +170,48 @@ func HeartMonitor(newElevator chan string,deadElevator chan string) {
 		}
 
 		for i,t := range heartbeats {
-			fmt.Println(i)
-
 			dur := time.Since(*t)
-			fmt.Println(dur)
-			if dur.Nanoseconds() > 300000000000 {
-				fmt.Println("why u go in here")
+			if dur.Seconds() > 1 {
 				deadElevator <- i
 				delete(heartbeats,i)
 			}
 		}
-
-		fmt.Println("\n")
-
 	}
 }
 
-func StatusMonitor(){
+func SendStatus(toPass chan Message){
+	send := make(chan []byte)
+	go UDPTx(send,StatusPort)
+	
+	for{
 
-
+		toPassBs,error := json.Marshal(<-toPass)
+		if error !=nil{
+			fmt.Println("error:", error)
+		}
+		send<-toPassBs
+	}
 
 }
 
-func AcknowledgeMonitor(){
+
+func StatusTransceiver(toPass chan Message,toGet chan Message){
+
+	receive := make(chan []byte)
+	
+	go UDPRx(receive,StatusPort)
+	go SendStatus(toPass)
+
+	
+	for{
+		RxMessageBs:=<-receive
+		RxMessage := Message{}
+	 	error := json.Unmarshal(RxMessageBs,&RxMessage)
+		if error !=nil{
+			fmt.Println("error:", error)
+		}
+		toGet<-RxMessage
+	}
 
 
 }

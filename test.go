@@ -12,7 +12,7 @@ func main() {
 	newEle := make (chan string)
 	deadEle := make (chan string)
 
-	go network.HeartMonitor(newEle,deadEle) 
+	go network.HeartbeatTransceiver(newEle,deadEle) 
 
 
 	for{
@@ -21,8 +21,6 @@ func main() {
 				fmt.Println("Connected ", ele)
 		 	case ele:= <-deadEle:
 				fmt.Println("Dead ", ele)
-			default:
-					
 		 }
 	}
 }
