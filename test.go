@@ -19,8 +19,9 @@ func sendorder(toPass chan Message){
 					Floor: 3,
 					},
 		}
-		toPass <- send
 		time.Sleep(10*time.Second)
+		toPass <- send
+		
 	}
 }
 
