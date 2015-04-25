@@ -45,11 +45,10 @@ func main() {
 				fmt.Println("Connected ", ele)
 		 	case ele:= <-deadEle:
 				fmt.Println("Dead ", ele)
+			case temp := <-toGet:
+				 fmt.Println(temp.MessageType,"from",temp.SenderIP)
 			default: 
 
 		 }
-		 temp := <-toGet
-		 fmt.Println(temp.MessageType,"from",temp.SenderIP)
-
 	}
 }
