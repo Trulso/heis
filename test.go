@@ -42,7 +42,7 @@ func main() {
 		}
 		toPass <- send
 		fmt.Println("Sendt!")
-		time.Sleep(20*time.Second)
+		time.Sleep(1*time.Second)
 
 	}
 }
