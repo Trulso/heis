@@ -48,6 +48,7 @@ func main() {
 			default: 
 
 		 }
+		 fmt.Println(<-toGet)
 
 	}
 }

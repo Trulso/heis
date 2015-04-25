@@ -87,7 +87,6 @@ func UDPRx(rx chan []byte ,port int){
 		buffer = buffer[:n]
 		rx <- buffer
 	}
-	defer socket.Close()
 }
 
 func UDPTx(tx chan []byte,port int)  {
@@ -103,7 +102,6 @@ func UDPTx(tx chan []byte,port int)  {
 			fmt.Println("error:", error)
 		}	
 	}	
-	defer socket.Close()
 }
 
 
@@ -150,7 +148,7 @@ func HeartbeatTransceiver(newElevator chan string,deadElevator chan string) {
 
 		for i,t := range heartbeats {
 			dur := time.Since(*t)
-			if dur.Seconds() > 3 {
+			if dur.Seconds() > 1 {
 				deadElevator <- i
 				delete(heartbeats,i)
 			}
@@ -163,6 +161,7 @@ func SendStatus(toPass chan Message){
 	go UDPTx(send,StatusPort)
 	
 	for{
+		fmt.Println("SO MANY BUGS")
 		toPassBs,error := json.Marshal(<-toPass)
 		if error !=nil{
 			fmt.Println("error:", error)
