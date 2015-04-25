@@ -10,7 +10,7 @@ import (
 
 func sendorder(toPass chan Message){
 	for{
-		fmt.Println("what happend!")
+	
 		send := Message{
 		MessageType: "newOrder",
 		SenderIP: network.GetIP(),
@@ -22,7 +22,7 @@ func sendorder(toPass chan Message){
 					},
 		}
 		time.Sleep(10*time.Second)
-		fmt.Println("this happend?")
+		
 		toPass <- send
 		fmt.Println("Sender")
 		
