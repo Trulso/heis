@@ -86,7 +86,7 @@ func UDPRx(rx chan []byte ,port int){
 		}
 		
 		buffer = buffer[:n]
-		fmt.Println(string(buffer))
+		fmt.Println("Motar",string(buffer))
 		rx <- buffer
 		socket.Close()	
 	}
@@ -99,7 +99,7 @@ func UDPTx(tx chan []byte,port int)  {
 	for{
 		socket := UDPDial(port)
 		dummy := <- tx
-		fmt.Println(string(dummy))
+		fmt.Println("Sender",string(dummy))
 		socket.SetWriteDeadline(time.Now().Add(10*time.Second))
 		_,error := socket.Write(dummy)
 		if error !=nil{
