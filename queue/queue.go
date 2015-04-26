@@ -177,12 +177,18 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 			if message.TargetIP != myIP {
 				_, exist := elevators[message.TargetIP]
 				if !exist{
-					time.Sleep(100*time.Millisecond)
+					newElev := Elevator{true,true,1,0,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
+					elevators[message.TargetIP]=&newElev
 				}
 				elevators[message.TargetIP].InFloor = message.Elevator.InFloor
 				elevators[message.TargetIP].LastPassedFloor = message.Elevator.LastPassedFloor
 				elevators[message.TargetIP].Direction = message.Elevator.Direction
-
+			
+				for floor:=0; floor <N_FLOORS;floor++ {
+					elevators[message.TargetIP].UpOrders[floor] = elevators[message.TargetIP].UpOrders[floor] || message.Elevator.UpOrders[floor]
+	 				elevators[message.TargetIP].DownOrders[floor] = elevators[message.TargetIP].DownOrders[floor] || message.Elevator.DownOrders[floor]
+	 				elevators[message.TargetIP].CommandOrders[floor] = elevators[message.TargetIP].CommandOrders[floor] || message.Elevator.CommandOrders[floor]
+				}
 			}
 
 			fmt.Println("HER ER STATUSEN VI FÅR TILSENDT")
@@ -201,26 +207,27 @@ func HeartbeatReceiver(newElevatorChan chan string, deadElevatorChan chan string
 	for{
 		select{
 		case IP := <-newElevatorChan:
-			fmt.Printf("Det er dukket opp en ny heis me IP: %s\n", IP)
-			_, exist := elevators[IP]
-			if exist{
-				fmt.Printf("denne heisen har vi fra før: %s\n",IP)
-				elevators[IP].Active = true
+			if IP != myIP {
+				fmt.Printf("Det er dukket opp en ny heis me IP: %s\n", IP)
+				_, exist := elevators[IP]
+				if exist{
+					elevators[IP].Active = true
 
-			}else{
-				newElev := Elevator{true,true,1,0,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
-				elevators[IP]=&newElev
-			}
-			for _,elev := range elevators{
-				fmt.Println(elev)
-			}
-			messageTransmitter("statusUpdate", myIP,Order{-1,-1})
-			fmt.Println("\nSENDER DENNE INFO OM MEG SELV")
-			printElevator(myIP)
-			messageTransmitter("statusUpdate", IP,Order{-1,-1})
-			fmt.Println("\nSENDER DENNE INFO OM DEN NYE HEISEN")
-			printElevator(IP)
+					fmt.Println("\nSENDER DENNE INFO OM MEG SELV")
+					printElevator(myIP)
+					messageTransmitter("statusUpdate", myIP,Order{-1,-1})
 
+					fmt.Println("\nSENDER DENNE INFO OM DEN NYE HEISEN")
+					printElevator(IP)
+					messageTransmitter("statusUpdate", IP,Order{-1,-1})
+				}else {
+					newElev := Elevator{true,true,1,0,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
+					elevators[IP]=&newElev
+					fmt.Println("\nSENDER DENNE INFO OM MEG SELV")
+					printElevator(myIP)
+					messageTransmitter("statusUpdate", myIP,Order{-1,-1})
+				}
+			}
 		case IP := <-deadElevatorChan:
 			elevators[IP].Active = false
 			fmt.Printf("Det er fjernet en heis med IP: %s\n", IP)

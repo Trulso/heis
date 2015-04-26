@@ -8,7 +8,7 @@ import (
 	. "./struct"
 	"fmt"
 )
-
+ 
 func main() {
 	fmt.Println("Da starter vi.")
 	driver.Init()
