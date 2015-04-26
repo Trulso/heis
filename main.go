@@ -1,50 +1,46 @@
 package main
 
-
-
 import (
-	"fmt"
-	io "./driver"
+	"./driver"
+	"./network"
 	"./queue"
 	"./stateMachine"
-	"./network"
-	."./struct"
+	. "./struct"
+	"fmt"
 )
-
 
 func main() {
 	fmt.Println("Da starter vi.")
-	io.Init()
-	floorReachedChan := make(chan int)
+	driver.Init()
+	queue.Init()
+
+	//Ordner med bestillinger mot hardware
 	upOrdersChan := make(chan int)
 	downOrdersChan := make(chan int)
 	commandOrdersChan := make(chan int)
 	orderOnSameFloorChan := make(chan int)
 	orderInEmptyQueueChan := make(chan int)
-	newElevator	 := make(chan string)
-	deadElevator := make(chan string)
-	toPass := make(chan Message)
-	toGet := make(chan Message)
-	fmt.Println("Har opprettet alle channels")
+	go queue.OrderButtonHandler(upOrdersChan, downOrdersChan, commandOrdersChan, orderOnSameFloorChan, orderInEmptyQueueChan)
+	go driver.OrderButtonPolling(commandOrdersChan, upOrdersChan, downOrdersChan)
 
+	//Ordner med etasjesensor
+	floorReachedChan := make(chan int)
+	go driver.FloorSensorPolling(floorReachedChan)
 
-	go network.HeartbeatTransceiver(newElevator,deadElevator)
-	go network.StatusTransceiver(toPass,toGet)
-	fmt.Println("Network started")
+	//Starter tilstandsmaskin
+	go stateMachine.Init(floorReachedChan, orderOnSameFloorChan, orderInEmptyQueueChan)
 
-	queue.RequestElevatorStatus(toPass)
+	//Ordner Heartbeat
+	newElevatorChan := make(chan string)
+	deadElevatorChan := make(chan string)
+	go network.HeartbeatTransceiver(newElevatorChan, deadElevatorChan)
+	go queue.HeartbeatReceiver(newElevatorChan, deadElevatorChan)
 
-	go queue.Init(upOrdersChan,downOrdersChan,commandOrdersChan,orderOnSameFloorChan,orderInEmptyQueueChan)
-	go stateMachine.Init(floorReachedChan,orderOnSameFloorChan,orderInEmptyQueueChan,toPass)
-	go queue.StatusDecoder(upOrdersChan,downOrdersChan,toGet,toPass)
-	fmt.Println("Laget en goroutine med queue og FSM")
-
-
-	go io.OrderButtonPolling(commandOrdersChan,upOrdersChan, downOrdersChan)
-	go io.FloorSensorPolling(floorReachedChan)
-	fmt.Println("Laget en goroutine med bolling")
+	//Ordner med beskjeer mellom heisene
+	receiveChan := make(chan Message)
+	go network.MessageTransceiver(receiveChan)
+	go queue.MessageReceiver(receiveChan, orderOnSameFloorChan, orderInEmptyQueueChan)
 
 	dontEndChan := make(chan int)
 	<-dontEndChan
-	fmt.Println("Dette bor ikke skrives ut")
 }

@@ -5,8 +5,6 @@ import (
 	"../queue"
 	"fmt"
 	"time"
-	"../network"
-	."../struct"
 )
 
 const (
@@ -15,9 +13,9 @@ const (
 	MOVING    = 2
 )
 
-func Init(floorReachedChan chan int, orderOnSameFloorChan chan int, orderInEmptyQueueChan chan int,toPass chan Message) {
+func Init(floorReachedChan chan int, orderOnSameFloorChan chan int, orderInEmptyQueueChan chan int) {
 	fmt.Printf("Initializing the state machine.\n")
-	state := MOVING
+	state := IDLE
 
 	doorTimer := time.NewTimer(3 * time.Second)
 	doorTimer.Stop()
@@ -36,7 +34,7 @@ func Init(floorReachedChan chan int, orderOnSameFloorChan chan int, orderInEmpty
 					doorTimer.Reset(3 * time.Second)
 					io.SetDoorLamp(1)
 					state = DOOR_OPEN
-					queue.OrderCompleted(floor,network.GetIP(),toPass)
+					queue.OrderCompleted(floor, "self")
 				}
 			}
 		case floor := <-orderOnSameFloorChan:
@@ -46,11 +44,12 @@ func Init(floorReachedChan chan int, orderOnSameFloorChan chan int, orderInEmpty
 				doorTimer.Reset(3 * time.Second)
 				io.SetDoorLamp(1)
 				state = DOOR_OPEN
-				queue.OrderCompleted(floor,network.GetIP(),toPass)
+				queue.OrderCompleted(floor, "self")
 			case DOOR_OPEN:
 				doorTimer.Reset(3 * time.Second)
-				queue.OrderCompleted(floor,network.GetIP(),toPass)
+				queue.OrderCompleted(floor, "self")
 			}
+
 		case <-orderInEmptyQueueChan:
 			fmt.Println("Det er kommet en ordre i en tom ko")
 			if state == IDLE {

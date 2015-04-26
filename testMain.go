@@ -14,6 +14,11 @@ const (
 	DOWN=-1
 	)
 
+type Order struct {
+	Type  int
+	Floor int
+}
+
 type Elevator struct {
 	Direction int
 	LastPassedFloor int
@@ -21,17 +26,41 @@ type Elevator struct {
 	DownOrders []bool
 	CommandOrders []bool
 }
+type Message struct {
+	MessageType string //newOrder,just arrived, status update, completed order,
+	SenderIP    string
+	TargetIP	string //Which elevator that changes
+	Elevator Elevator
+	Order   Order
+}
 
 // var myIP = //SKaff lokalIPadresse
 var elevators = map[string]*Elevator{}
 var myIP = "IP1"
 var elev1 = Elevator{1,1,[]bool{false,false,false,false},[]bool{false,true,false,false},[]bool{false,false,false,false}}
 var elev2 = Elevator{1,2,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
+var elev3 = Elevator{1,2,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
+var elev4 = Elevator{1,2,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
+
 
 func main(){
 
  	elevators["IP1"] = &elev1
  	elevators["IP2"] = &elev2
+ 	AddElevator(&elev3, "IP4")
+ 	fmt.Println(elevators)
+
+ 	send := Message{
+			MessageType: "acknowledge",
+			SenderIP: "Noe2",
+			TargetIP: "Noeaqnn",
+			Elevator: elev1,
+			Order: Order{
+					Type:  -1,
+					Floor: -1,
+					},
+			}
+	fmt.Println(send.Elevator)
 
  // 	fmt.Println("Oppordrer: ", elevators["IP1"].UpOrders)
  // 	fmt.Println("Nedordrer: ", elevators["IP1"].DownOrders)
@@ -48,10 +77,6 @@ func main(){
 	elevators["IP1"].LastPassedFloor = 0
 	fmt.Println(ordersAbove())
 */
-	fmt.Println(ShouldStop(0))
-	elevators["IP1"].UpOrders[2]=true
-	fmt.Println(ShouldStop(1))
-	fmt.Println(ShouldStop(2))
 
 	doorTimer := time.NewTimer(1000*time.Millisecond)
 	<-doorTimer.C
@@ -131,3 +156,7 @@ func ShouldStop(floor int) bool {
 	}
 	return true
 }
+
+func AddElevator(newElevator *Elevator, IP string) {
+	elevators[IP] = newElevator
+} //Ferdig

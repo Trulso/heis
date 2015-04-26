@@ -23,18 +23,23 @@ func Init() int {
 		return -1
 	}
 
-	SetMotorDir(-1)
-	for {
-		if(Io_read_bit(SENSOR_FLOOR1) == 1){
-			SetMotorDir(0)
-			break
-		}
-		time.Sleep(1*time.Millisecond)
-	}
-
 	for i := 0; i < 16; i++ {
 		Io_clear_bit(0x300+i)
 	}
+
+	SetMotorDir(-1)
+Loop:
+	for {
+		for floor := SENSOR_FLOOR1; floor < SENSOR_FLOOR4+1; floor++ {
+			if Io_read_bit(floor) == 1 {
+				SetMotorDir(0)
+				SetFloorIndicator(floor-SENSOR_FLOOR1)
+				break Loop
+			}
+		time.Sleep(1*time.Millisecond)
+		}
+	}
+
 
 	fmt.Println("Hardware init success.")
 	return 1
@@ -193,11 +198,6 @@ func FloorSensorPolling(floorSensorChan chan int){
 	}
 }//Ferdig
 
-
-
-
-/*Funksjoner under er ikke lenger brukt
-*/
 func GetFloorSensorSignal() int {
 	if Io_read_bit(SENSOR_FLOOR1) == 1{
     	return 0
@@ -214,98 +214,3 @@ func GetFloorSensorSignal() int {
 	    return -1
 	}
 }
-func UpOrdersPolling(upOrdersChannel chan int) {
-    buttonPressed := make([]int, N_FLOORS-1)
-	for {
-		for floor := 0; floor<N_FLOORS-1; floor++ {
-			if getUpOrdersSignal(floor) == 1 {
-				if buttonPressed[floor] == 0 {
-					upOrdersChannel<-floor
-					buttonPressed[floor] = 1
-				}
-			}else {
-				if buttonPressed[floor] == 1 {
-					buttonPressed[floor] = 0
-				}
-			}
-		}
-		time.Sleep(1*time.Millisecond)
-	}
-}
-func DownOrdersPolling(downOrdersChannel chan int) {
-    buttonPressed := make([]int, N_FLOORS-1)
-	for {
-		for floor := 1; floor<N_FLOORS; floor++ {
-			if getDownOrdersSignal(floor) == 1 {
-				if buttonPressed[floor-1] == 0 {
-					downOrdersChannel<-floor
-					buttonPressed[floor-1] = 1
-				}
-			}else {
-				if buttonPressed[floor-1] == 1 {
-					buttonPressed[floor-1] = 0
-				}
-			}
-		}
-		time.Sleep(1*time.Millisecond)
-	}
-}
-func CommandOrdersPolling(commandOrdersChannel chan int) {
-    buttonPressed := make([]int, N_FLOORS)
-	for {
-		for floor := 0; floor<N_FLOORS; floor++ {
-			if getCommandOrdersSignal(floor) == 1 {
-				if buttonPressed[floor] == 0 {
-					commandOrdersChannel<-floor
-					buttonPressed[floor] = 1
-				}
-			}else {
-				if buttonPressed[floor] == 1 {
-					buttonPressed[floor] = 0
-				}
-			}
-		}
-		time.Sleep(1*time.Millisecond)
-	}
-}
-func getDownOrdersSignal(floor int) int {
-	if floor == 1 {
-		return Io_read_bit(BUTTON_DOWN2)
-	}else if floor == 2 {
-		return Io_read_bit(BUTTON_DOWN3)
-	}else if floor == 3 {
-		return Io_read_bit(BUTTON_DOWN4)
-	}
-	fmt.Printf("No down order buttons exist in the %d floor\n", floor)
-	return -1
-}
-func getUpOrdersSignal(floor int) int {
-	if floor == 0 {
-		return Io_read_bit(BUTTON_UP1)
-	}else if floor == 1 {
-		return Io_read_bit(BUTTON_UP2)
-	}else if floor == 2 {
-		return Io_read_bit(BUTTON_UP3)
-	}
-	fmt.Printf("No up order buttons exist in the %d floor\n", floor)
-	return -1
-}
-func getCommandOrdersSignal(floor int) int {
-	if floor == 0 {
-		return Io_read_bit(BUTTON_COMMAND1)
-	}else if floor == 1 {
-		return Io_read_bit(BUTTON_COMMAND2)
-	}else if floor == 2 {
-		return Io_read_bit(BUTTON_COMMAND3)
-	}else if floor == 3 {
-		return Io_read_bit(BUTTON_COMMAND4)
-	}
-	fmt.Printf("No up command buttons exist in the %d floor\n", floor)
-	return -1
-}
-
-
-
-
-
-

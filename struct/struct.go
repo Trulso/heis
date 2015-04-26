@@ -1,4 +1,4 @@
-package struckt 
+package structs 
 
 import (
 		"time"
@@ -14,9 +14,9 @@ type Heartbeat struct {
 type Message struct {
 	MessageType string //newOrder,just arrived, status update, completed order,
 	SenderIP    string
-	ReceiverIP	string
-	Elevators   map[string]*Elevator
-	ThisFloor   Order
+	TargetIP	string //Which elevator that changes
+	Elevator Elevator
+	Order   Order
 }
 
 type Order struct {
@@ -25,6 +25,7 @@ type Order struct {
 }
 
 type Elevator struct {
+	Active			bool
 	Direction       int
 	LastPassedFloor int
 	UpOrders        []bool
