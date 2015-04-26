@@ -271,16 +271,18 @@ func findCheapestElevator(newOrder Order) string {
 
 	cheapestElevator := myIP
 	minCost := 9999
-	for IP, elevator := range elevators || elevators[IP].Active = true {
-		fmt.Println(IP)
-		cost := costFunction(elevator, newOrder,IP)
-		fmt.Println ("The cost is ---------------------------------------->",cost)
-		if cost < minCost {
-			minCost = cost
-			cheapestElevator = IP
-		}
-		if cost == 0 {
-			break
+	for IP, elevator := range elevators {
+		if elevators[IP].Active == true {
+			fmt.Println(IP)
+			cost := costFunction(elevator, newOrder,IP)
+			fmt.Println ("The cost is ---------------------------------------->",cost)
+			if cost < minCost {
+				minCost = cost
+				cheapestElevator = IP
+			}
+			if cost == 0 {
+				break
+			}
 		}
 	}
 	fmt.Println(cheapestElevator)
