@@ -166,7 +166,7 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 			//fmt.Println("Her får vi newDirection")
 			elevators[message.TargetIP].Direction = message.Order.Type
 		case "newFloor":
-			fmt.Println("Her får vi newFloor")
+			//fmt.Println("Her får vi newFloor")
 			elevators[message.TargetIP].LastPassedFloor = message.Order.Floor
 			elevators[message.TargetIP].InFloor = true
 		case "completedOrder":
@@ -179,22 +179,19 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 				if !exist{
 					time.Sleep(100*time.Millisecond)
 				}
-				fmt.Println("********************************************************** Her er vi inne i ifen")
 				elevators[message.TargetIP].InFloor = message.Elevator.InFloor
 				elevators[message.TargetIP].LastPassedFloor = message.Elevator.LastPassedFloor
 				elevators[message.TargetIP].Direction = message.Elevator.Direction
 
 			}
 
-			for floor:= 0; floor<N_FLOORS;floor++{
+			fmt.Println("HER ER STATUSEN VI FÅR TILSENDT")
+			fmt.Println(message.TargetIP)
+			fmt.Println(message.Elevator)
 
-					elevators[message.TargetIP].UpOrders[floor]      = elevators[message.TargetIP].UpOrders[floor] || message.Elevator.UpOrders[floor]
-					elevators[message.TargetIP].DownOrders[floor]    = elevators[message.TargetIP].DownOrders[floor] || message.Elevator.DownOrders[floor]
-					elevators[message.TargetIP].CommandOrders[floor] = elevators[message.TargetIP].CommandOrders[floor] || message.Elevator.CommandOrders[floor]
-			}
 
 		case "leftFloor":
-			fmt.Println("Heis %s har forlatt etasjen", message.TargetIP)
+			fmt.Printf("Heis %s har forlatt etasjen:\n", message.TargetIP)
 			LeftFloor(message.TargetIP)
 		}
 	}
