@@ -216,6 +216,7 @@ func HeartbeatReceiver(newElevatorChan chan string, deadElevatorChan chan string
 					fmt.Println("\nSENDER DENNE INFO OM MEG SELV")
 					printElevator(myIP)
 					messageTransmitter("statusUpdate", myIP,Order{-1,-1})
+					time.Sleep(1*time.Millisecond)
 
 					fmt.Println("\nSENDER DENNE INFO OM DEN NYE HEISEN")
 					printElevator(IP)
@@ -433,7 +434,7 @@ func StatusPrint(){
 	statusTimer:= time.NewTimer(1 * time.Second)
 	statusTimer.Stop()
 	for{
-		statusTimer.Reset(3 * time.Second)
+		statusTimer.Reset(10 * time.Second)
 		<-statusTimer.C
 		fmt.Println("\n\t\tELEVATOR STATUS")
 		for IP, _ := range elevators{
