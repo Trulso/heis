@@ -194,6 +194,7 @@ func HeartbeatReceiver(newElevatorChan chan string, deadElevatorChan chan string
 			fmt.Printf("Det er dukket opp en ny heis me IP: %s\n", IP)
 			_, exist := elevators[IP]
 			if exist{
+				fmt.Println("denne heisen er ikke ny",IP)
 				elevators[IP].Active = true
 			}else{
 				newElev := Elevator{true,1,0,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
@@ -270,7 +271,7 @@ func findCheapestElevator(newOrder Order) string {
 
 	cheapestElevator := myIP
 	minCost := 9999
-	for IP, elevator := range elevators {
+	for IP, elevator := range elevators || elevators[IP].Active = true {
 		fmt.Println(IP)
 		cost := costFunction(elevator, newOrder,IP)
 		fmt.Println ("The cost is ---------------------------------------->",cost)
