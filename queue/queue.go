@@ -103,10 +103,6 @@ func ShouldStop(floor int) bool {
 	return true
 }
 
-func AddElevator(newElevator *Elevator, IP string) {
-	elevators[IP] = newElevator
-} //Ferdig kanskje...
-
 func OrderCompleted(floor int, byElevator string) {
 	
 	for IP, elevator := range elevators {
@@ -124,7 +120,7 @@ func OrderCompleted(floor int, byElevator string) {
 		//fmt.Println("Sender fullført ordre nå")
 	}
 	lightUpdateChan <-1
-}//LIGHTUPDATE
+}
 
 func NextDirection() int {
 	//fmt.Println("Vi skal finne neste retning")
@@ -150,6 +146,8 @@ func NextDirection() int {
 			return UP
 		}
 	}
+
+	//for IP,elevator := range 
 	elevators[myIP].Direction = STOP
 	return STOP
 } //Utvid til å sjekke andre sine bestillingskøer, sende direction etterpå
@@ -208,7 +206,7 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 			LeftFloor(message.TargetIP)
 		}
 	}
-}//LIGHTCHAN
+}
 
 func HeartbeatReceiver(newElevatorChan chan string, deadElevatorChan chan string){
 	for{
@@ -263,7 +261,7 @@ func ordersAbove(IP string) bool {
 		}
 	}
 	return false
-} //Ferdig
+}
 
 func ordersBellow(IP string) bool {
 	for floor := elevators[IP].LastPassedFloor - 1; floor > -1; floor-- {
@@ -272,7 +270,7 @@ func ordersBellow(IP string) bool {
 		}
 	}
 	return false
-} //Ferdig
+}
 
 func isQueueEmpty(IP string) bool {
 	if ordersAbove(IP) || ordersBellow(IP) {
@@ -283,7 +281,7 @@ func isQueueEmpty(IP string) bool {
 		return false
 	}
 	return true
-} //Ferdig
+}
 
 func isIdenticalOrder(newOrder Order) bool {
 	for _, elevator := range elevators {
@@ -303,7 +301,7 @@ func isIdenticalOrder(newOrder Order) bool {
 		}
 	}
 	return false
-} //Ferdig
+}
 
 func findCheapestElevator(newOrder Order) string {
 	cheapestElevator := myIP
@@ -324,7 +322,7 @@ func findCheapestElevator(newOrder Order) string {
 	}
 	fmt.Println(cheapestElevator)
 	return cheapestElevator
-}//Ferdig
+}
 
 func costFunction(elevator *Elevator, newOrder Order,ip string) int {
 	
@@ -381,7 +379,7 @@ func addInternalOrder(newOrder Order,b_type int) string{
 		}
 	}
 	return ""
-}//LIGHTUPDATE
+}
 
 func addExternalOrder(taskedElevator string, newOrder Order) string {
 	firstOrder:= isQueueEmpty(myIP)
@@ -403,7 +401,7 @@ func addExternalOrder(taskedElevator string, newOrder Order) string {
 		}
 	}
 	return ""
-}//LIGHTUPDATE
+}
 
 func messageTransmitter(msgType string, targetIP string, order Order){ //newOrder, floorUpdate, completedOrder, directionUpdate, 
 	//fmt.Printf("Nå lager vi en %s type message\n", msgType)
@@ -419,7 +417,7 @@ func messageTransmitter(msgType string, targetIP string, order Order){ //newOrde
 
 func printElevator(elevatorIP string){
 	fmt.Printf("\nHeis IP: %s\n", elevatorIP)
-	//fmt.Printf("Active: %t\n", elevators[elevatorIP].Active)
+	fmt.Printf("Active: %t\n", elevators[elevatorIP].Active)
 	if elevators[elevatorIP].Direction == 1 {
 		fmt.Printf("Direction: UP\n")
 	}else if elevators[elevatorIP].Direction == -1 {
