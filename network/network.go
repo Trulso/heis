@@ -87,7 +87,7 @@ func MessageTransceiver(receiveChan chan Message) {
 			fmt.Println("error:", error)
 		}
 
-		if RxMessage.TargetIP != GetIP() && (RxMessage.TargetIP == GetIP() || RxMessage.TargetIP == "") {
+		if RxMessage.SenderIP != GetIP(){
 			fmt.Println("Sender beskjeden til queue")
 			receiveChan <- RxMessage
 		}

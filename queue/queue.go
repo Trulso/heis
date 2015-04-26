@@ -172,6 +172,9 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 			OrderCompleted(message.Order.Floor, message.SenderIP)
 		case "statusUpdate":
 			fmt.Println("Her får vi statusUpdate")
+			fmt.Printf("COM:%v\n", elevators[myIP].CommandOrders)
+			fmt.Printf("DWN:%v\n", elevators[myIP].DownOrders)
+			fmt.Printf("UP: %v\n", elevators[myIP].UpOrders)
 			if message.TargetIP == myIP {
 				for floor:= 0; floor<N_FLOORS;floor++{
 					elevators[myIP].UpOrders[floor]      = elevators[myIP].UpOrders[floor] || message.Elevator.UpOrders[floor]
@@ -181,6 +184,10 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 			}else {
 				elevators[message.TargetIP] = &message.Elevator
 			}
+			fmt.Println("Her har vi oppdatert status")
+			fmt.Printf("COM:%v\n", elevators[myIP].CommandOrders)
+			fmt.Printf("DWN:%v\n", elevators[myIP].DownOrders)
+			fmt.Printf("UP: %v\n", elevators[myIP].UpOrders)
 		}
 	}
 }
@@ -204,6 +211,7 @@ func HeartbeatReceiver(newElevatorChan chan string, deadElevatorChan chan string
 			messageTransmitter("statusUpdate", IP,Order{-1,-1})
 		case IP := <-deadElevatorChan:
 			elevators[IP].Active = false
+			fmt.Printf("Det er fjernet en ny heis me IP: %s\n", IP)
 		}
 	}
 }
