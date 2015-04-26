@@ -41,6 +41,8 @@ func main() {
 	go network.MessageTransceiver(receiveChan)
 	go queue.MessageReceiver(receiveChan, orderOnSameFloorChan, orderInEmptyQueueChan)
 
+	go queue.StatusPrint()
+
 	dontEndChan := make(chan int)
 	<-dontEndChan
 }

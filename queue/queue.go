@@ -6,6 +6,9 @@ import (
 	."../struct"
 	"../network"
 	"math"
+	"time"
+	"os"
+	"os/exec"
 )
 
 const (
@@ -71,6 +74,7 @@ func OrderButtonHandler(upOrderChan chan int, downOrderChan chan int, commandOrd
 
 func ShouldStop(floor int) bool {
 	elevators[myIP].LastPassedFloor = floor
+	elevators[myIP].InFloor = true
 	defer messageTransmitter("newFloor", myIP, Order{-1,floor}) 
 	//defer fmt.Println("Sender newFloor nå")
 	if elevators[myIP].CommandOrders[floor] {
@@ -108,21 +112,19 @@ func OrderCompleted(floor int, byElevator string) {
 			elevator.CommandOrders[floor] = false
 		}
 	}
-	//fmt.Println("KOmmer vi hit?")
 	driver.ClearButtonLed(floor,UP)
 	driver.ClearButtonLed(floor,DOWN)
 	if byElevator == "self" {
 		driver.ClearButtonLed(floor,COMMAND)
 		messageTransmitter("completedOrder",  myIP , Order{-1,floor})
-		fmt.Println("Sender fullført ordre nå")
+		//fmt.Println("Sender fullført ordre nå")
 	}
 }
 
 func NextDirection() int {
-	fmt.Println("Vi skal finne neste retning")
-	printElevator(myIP)
+	//fmt.Println("Vi skal finne neste retning")
 	defer func() {
-		fmt.Println("Sender ny retning nå")
+		//fmt.Println("Sender ny retning nå")
 		messageTransmitter("newDirection", myIP, Order{elevators[myIP].Direction, -1})
 	}()
 	lastDir := elevators[myIP].Direction
@@ -150,10 +152,9 @@ func NextDirection() int {
 func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan int, orderInEmptyQueueChan chan int){
 	for{
 		message := <-incommingMsgChan
-		printElevator(myIP)
 		switch message.MessageType{
 		case "newOrder":
-			fmt.Println("Her får vi newOrder")
+			//fmt.Println("Her får vi newOrder")
 			i := addExternalOrder(message.TargetIP, message.Order)		
 			switch i {
 			case "empty":
@@ -162,32 +163,38 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 				orderOnSameFloorChan <- message.Order.Floor
 			}
 		case "newDirection":
-			fmt.Println("Her får vi newDirection")
+			//fmt.Println("Her får vi newDirection")
 			elevators[message.TargetIP].Direction = message.Order.Type
 		case "newFloor":
-			fmt.Println("Her får vi newFloor")
+			//fmt.Println("Her får vi newFloor")
 			elevators[message.TargetIP].LastPassedFloor = message.Order.Floor
 			elevators[message.TargetIP].InFloor = true
 		case "completedOrder":
-			fmt.Println("Her får vi completedOrder")
+			//fmt.Println("Her får vi completedOrder")
 			OrderCompleted(message.Order.Floor, message.TargetIP)
 		case "statusUpdate":
 			fmt.Println("Her får vi statusUpdate")
-			if message.TargetIP == myIP {
-				for floor:= 0; floor<N_FLOORS;floor++{
-					elevators[myIP].UpOrders[floor]      = elevators[myIP].UpOrders[floor] || message.Elevator.UpOrders[floor]
-					elevators[myIP].DownOrders[floor]    = elevators[myIP].DownOrders[floor] || message.Elevator.DownOrders[floor]
-					elevators[myIP].CommandOrders[floor] = elevators[myIP].CommandOrders[floor] || message.Elevator.CommandOrders[floor]
-				}	
-			}else {
-				elevators[message.TargetIP] = &message.Elevator
+			if message.TargetIP != myIP {
+				_, exist := elevators[message.TargetIP]
+				if !exist{
+					time.Sleep(200*time.Millisecond)
+				}
+				fmt.Println("Her er vi inne i ifen")
+				elevators[message.TargetIP].InFloor = message.Elevator.InFloor
+				fmt.Println(elevators)
+				fmt.Println(message.Elevator.InFloor)
+				elevators[message.TargetIP].LastPassedFloor = message.Elevator.LastPassedFloor
+				elevators[message.TargetIP].Direction = message.Elevator.Direction
 			}
-			fmt.Println("Her har vi oppdatert status")
+			for floor:= 0; floor<N_FLOORS;floor++{
+					elevators[message.TargetIP].UpOrders[floor]      = elevators[message.TargetIP].UpOrders[floor] || message.Elevator.UpOrders[floor]
+					elevators[message.TargetIP].DownOrders[floor]    = elevators[message.TargetIP].DownOrders[floor] || message.Elevator.DownOrders[floor]
+					elevators[message.TargetIP].CommandOrders[floor] = elevators[message.TargetIP].CommandOrders[floor] || message.Elevator.CommandOrders[floor]
+			}
 		case "leftFloor":
 			fmt.Println("Heis %s har forlatt etasjen", message.TargetIP)
 			LeftFloor(message.TargetIP)
 		}
-		printElevator(myIP)
 	}
 }
 
@@ -198,7 +205,7 @@ func HeartbeatReceiver(newElevatorChan chan string, deadElevatorChan chan string
 			fmt.Printf("Det er dukket opp en ny heis me IP: %s\n", IP)
 			_, exist := elevators[IP]
 			if exist{
-				fmt.Println("denne heisen er ikke ny",IP)
+				fmt.Printf("denne heisen har vi fra før: %s\n",IP)
 				elevators[IP].Active = true
 
 			}else{
@@ -358,8 +365,6 @@ func addInternalOrder(newOrder Order,b_type int) string{
 
 func addExternalOrder(taskedElevator string, newOrder Order) string {
 	firstOrder:= isQueueEmpty(myIP)
-	fmt.Println("Heis før ny ekstern bestilling")
-	printElevator(taskedElevator)
 	if newOrder.Type == UP {
 		elevators[taskedElevator].UpOrders[newOrder.Floor]=true
 		driver.SetButtonLed(newOrder.Floor,newOrder.Type)
@@ -376,8 +381,6 @@ func addExternalOrder(taskedElevator string, newOrder Order) string {
 			return "empty"
 		}
 	}
-	fmt.Println("Heis etter ny ekstern bestilling")
-	printElevator(taskedElevator)
 	return ""
 }
 
@@ -394,7 +397,7 @@ func messageTransmitter(msgType string, targetIP string, order Order){ //newOrde
 }
 
 func printElevator(elevatorIP string){
-	fmt.Printf("\n\nHeis IP: %s\n", elevatorIP)
+	fmt.Printf("\nHeis IP: %s\n", elevatorIP)
 	//fmt.Printf("Active: %t\n", elevators[elevatorIP].Active)
 	if elevators[elevatorIP].Direction == 1 {
 		fmt.Printf("Direction: UP\n")
@@ -403,11 +406,28 @@ func printElevator(elevatorIP string){
 	}else {
 		fmt.Printf("Direction: STOP\n")
 	}
+	fmt.Printf("In floor: %t\n", elevators[elevatorIP].InFloor)
 	fmt.Printf("Last Passed Floor: %d\n", elevators[elevatorIP].LastPassedFloor)
 
 	fmt.Printf("|  UP\t| DOWN\t|COMMAND|\n")
 	for floor := N_FLOORS-1; floor>-1; floor--{
 		fmt.Printf("| %t\t| %t\t| %t\t|\n",elevators[elevatorIP].UpOrders[floor],elevators[elevatorIP].DownOrders[floor],elevators[elevatorIP].CommandOrders[floor])
 	}
-	fmt.Printf("\n\n")
+}
+
+func StatusPrint(){
+	c := exec.Command("clear")
+	c.Stdout = os.Stdout
+	c.Run()
+	statusTimer:= time.NewTimer(1 * time.Second)
+	statusTimer.Stop()
+	for{
+		statusTimer.Reset(3 * time.Second)
+		<-statusTimer.C
+		fmt.Println("\n\t\tELEVATOR STATUS")
+		for IP, _ := range elevators{
+			printElevator(IP)
+		}
+	}
+
 }
