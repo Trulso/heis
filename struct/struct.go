@@ -1,22 +1,20 @@
-package structs 
+package structs
 
 import (
-		"time"
+	"time"
 )
 
-
-
 type Heartbeat struct {
-		Id string
-		Time time.Time
+	Id   string
+	Time time.Time
 }
 
 type Message struct {
-	MessageType string 
+	MessageType string
 	SenderIP    string
-	TargetIP	string //Which elevator that changes status
-	Elevator Elevator
-	Order   Order
+	TargetIP    string //Which elevator that changes status
+	Elevator    Elevator
+	Order       Order
 }
 
 type Order struct {
@@ -25,14 +23,12 @@ type Order struct {
 }
 
 type Elevator struct {
-	Active			bool
-	InFloor			bool
+	Active          bool
+	InFloor         bool
 	Direction       int
 	LastPassedFloor int
 
-	UpOrders        []bool
-	DownOrders      []bool
-	CommandOrders   []bool
+	UpOrders      []bool
+	DownOrders    []bool
+	CommandOrders []bool
 }
-
-

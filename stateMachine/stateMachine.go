@@ -26,7 +26,7 @@ func Init(floorReachedChan chan int, orderOnSameFloorChan chan int, orderInEmpty
 		case floor := <-floorReachedChan:
 			if floor == -1 {
 				queue.LeftFloor("")
-			}else{
+			} else {
 				fmt.Printf("Vi ankom etasje %d\n", floor)
 				io.SetFloorIndicator(floor)
 				switch state {

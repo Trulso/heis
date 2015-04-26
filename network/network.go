@@ -9,17 +9,15 @@ import (
 )
 
 const (
-	elevatorDead  = 1000000000
 	HeartBeatPort = 30115
 	StatusPort    = 30215
 )
+
 var broadcastChan = make(chan Message)
 
 func BroadcastMessage(message Message) {
-	//fmt.Println("Vi broadcaster")
 	broadcastChan <- message
 }
-
 
 func GetIP() string {
 
@@ -79,14 +77,12 @@ func MessageTransceiver(receiveChan chan Message) {
 
 	for {
 		RxMessageBs := <-receive
-		//fmt.Println("Vi har motatt en beskjed")
 		RxMessage := Message{}
-		//fmt.Println(string(RxMessageBs))
 		error := json.Unmarshal(RxMessageBs, &RxMessage)
 		if error != nil {
 			fmt.Println("error:", error)
 		}
-		if RxMessage.SenderIP != GetIP(){
+		if RxMessage.SenderIP != GetIP() {
 			receiveChan <- RxMessage
 		}
 	}
@@ -118,7 +114,6 @@ func sendStatus(toSend chan Message) {
 
 	for {
 		temp := <-toSend
-		//fmt.Println("Dette sender vi: ",temp)
 		toSendBs, error := json.Marshal(temp)
 		if error != nil {
 			fmt.Println("error:", error)
@@ -155,7 +150,6 @@ func udpListen(port int) *net.UDPConn {
 func udpRx(rx chan []byte, port int) {
 	for {
 		socket := udpListen(port)
-		//socket.SetReadDeadline(time.Now().Add(10*time.Second)) //ingen aktivitet på net i løpet av 10s, noe er feil ?=
 		buffer := make([]byte, 1024)
 		n, _, error := socket.ReadFromUDP(buffer)
 
