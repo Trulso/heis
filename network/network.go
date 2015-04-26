@@ -10,8 +10,8 @@ import (
 
 const (
 	elevatorDead  = 1000000000
-	HeartBeatPort = 30114
-	StatusPort    = 30214
+	HeartBeatPort = 30115
+	StatusPort    = 30215
 )
 var broadcastChan = make(chan Message)
 

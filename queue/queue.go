@@ -42,7 +42,6 @@ func OrderButtonHandler(upOrderChan chan int, downOrderChan chan int, commandOrd
 		case floor := <-upOrderChan:
 			newOrder := Order{UP, floor}
 			i := addInternalOrder(newOrder,UP)
-			fmt.Println("Opp ordre")
 			switch i {
 			case "empty":
 				orderInEmptyQueueChan <- floor
@@ -53,7 +52,6 @@ func OrderButtonHandler(upOrderChan chan int, downOrderChan chan int, commandOrd
 		case floor := <-downOrderChan:
 			newOrder := Order{DOWN, floor}
 			i:=addInternalOrder(newOrder,DOWN)
-			fmt.Println("Ned ordre")
 			switch i {
 			case "empty":
 				orderInEmptyQueueChan <- floor
@@ -64,7 +62,6 @@ func OrderButtonHandler(upOrderChan chan int, downOrderChan chan int, commandOrd
 		case floor := <-commandOrderChan:	
 			newOrder := Order{COMMAND, floor}
 			i:=addInternalOrder(newOrder,COMMAND)
-			fmt.Printf("Command ordre: %s\n", i)
 			switch i {
 			case "empty":
 				orderInEmptyQueueChan <- floor
@@ -78,8 +75,7 @@ func OrderButtonHandler(upOrderChan chan int, downOrderChan chan int, commandOrd
 func ShouldStop(floor int) bool {
 	elevators[myIP].LastPassedFloor = floor
 	elevators[myIP].InFloor = true
-	defer messageTransmitter("newFloor", myIP, Order{-1,floor}) 
-	//defer fmt.Println("Sender newFloor nå")
+	defer messageTransmitter("newFloor", myIP, Order{-1,floor})
 	if elevators[myIP].CommandOrders[floor] {
 		return true
 	}
@@ -123,9 +119,7 @@ func OrderCompleted(floor int, byElevator string) {
 }
 
 func NextDirection() int {
-	//fmt.Println("Vi skal finne neste retning")
 	defer func() {
-		//fmt.Println("Sender ny retning nå")
 		messageTransmitter("newDirection", myIP, Order{elevators[myIP].Direction, -1})
 	}()
 	lastDir := elevators[myIP].Direction
@@ -147,17 +141,42 @@ func NextDirection() int {
 		}
 	}
 
-	//for IP,elevator := range 
+	//Om man ikke har felebestillinger selv, tar man over andre heiser sine bestillinger.
+	for IP,elevator := range elevators{
+		if IP != myIP{
+			for floor:=0; floor <N_FLOORS; floor++ {
+				if elevator.UpOrders[floor] {
+					elevators[myIP].UpOrders[floor] = true
+					if elevators[myIP].LastPassedFloor < floor {
+						elevators[myIP].Direction = UP
+						return UP
+					}else{
+						elevators[myIP].Direction = DOWN
+						return DOWN
+					}
+				}
+				if elevator.DownOrders[floor] {
+					elevators[myIP].DownOrders[floor] = true
+					if elevators[myIP].LastPassedFloor < floor {
+						elevators[myIP].Direction = UP
+						return UP
+					}else{
+						elevators[myIP].Direction = DOWN
+						return DOWN
+					}
+				}
+			}
+		}
+	}
 	elevators[myIP].Direction = STOP
 	return STOP
-} //Utvid til å sjekke andre sine bestillingskøer, sende direction etterpå
+} 
 
 func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan int, orderInEmptyQueueChan chan int){
 	for{
 		message := <-incommingMsgChan
 		switch message.MessageType{
 		case "newOrder":
-			//fmt.Println("Her får vi newOrder")
 			i := addExternalOrder(message.TargetIP, message.Order)		
 			switch i {
 			case "empty":
@@ -166,14 +185,11 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 				orderOnSameFloorChan <- message.Order.Floor
 			}
 		case "newDirection":
-			//fmt.Println("Her får vi newDirection")
 			elevators[message.TargetIP].Direction = message.Order.Type
 		case "newFloor":
-			//fmt.Println("Her får vi newFloor")
 			elevators[message.TargetIP].LastPassedFloor = message.Order.Floor
 			elevators[message.TargetIP].InFloor = true
 		case "completedOrder":
-			//fmt.Println("Her får vi completedOrder")
 			OrderCompleted(message.Order.Floor, message.TargetIP)
 		case "statusUpdate":
 			fmt.Println("Her får vi statusUpdate")
@@ -196,9 +212,9 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 				lightUpdateChan <-1
 			}
 
-			fmt.Println("HER ER STATUSEN VI FÅR TILSENDT")
-			fmt.Println(message.TargetIP)
-			fmt.Println(message.Elevator)
+			//fmt.Println("HER ER STATUSEN VI FÅR TILSENDT")
+			//fmt.Println(message.TargetIP)
+			//fmt.Println(message.Elevator)
 
 
 		case "leftFloor":
@@ -218,19 +234,19 @@ func HeartbeatReceiver(newElevatorChan chan string, deadElevatorChan chan string
 				if exist{
 					elevators[IP].Active = true
 
-					fmt.Println("\nSENDER DENNE INFO OM MEG SELV")
-					printElevator(myIP)
+					//fmt.Println("\nSENDER DENNE INFO OM MEG SELV")
+					//printElevator(myIP)
 					messageTransmitter("statusUpdate", myIP,Order{-1,-1})
 					time.Sleep(1*time.Millisecond)
 
-					fmt.Println("\nSENDER DENNE INFO OM DEN NYE HEISEN")
-					printElevator(IP)
+					//fmt.Println("\nSENDER DENNE INFO OM DEN NYE HEISEN")
+					//printElevator(IP)
 					messageTransmitter("statusUpdate", IP,Order{-1,-1})
 				}else {
 					newElev := Elevator{true,true,1,0,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
 					elevators[IP]=&newElev
-					fmt.Println("\nSENDER DENNE INFO OM MEG SELV")
-					printElevator(myIP)
+					//fmt.Println("\nSENDER DENNE INFO OM MEG SELV")
+					//printElevator(myIP)
 					messageTransmitter("statusUpdate", myIP,Order{-1,-1})
 				}
 			}
@@ -343,9 +359,6 @@ func addInternalOrder(newOrder Order,b_type int) string{
 	if isIdenticalOrder(newOrder) {
 		return ""
 	}
-	/*defer func() {
-		driver.SetButtonLed(newOrder.Floor,newOrder.Type)
-	}()*/
 
 	if b_type != COMMAND{
 		cheapestElevator = findCheapestElevator(newOrder)
@@ -358,13 +371,10 @@ func addInternalOrder(newOrder Order,b_type int) string{
 			if newOrder.Type == UP {
 				Ele.UpOrders[newOrder.Floor]=true
 	
-			fmt.Println("Legger til en oppoverordre")
 			}else if newOrder.Type == DOWN {
 				Ele.DownOrders[newOrder.Floor]=true
-				fmt.Println("Legger til en nedoverordre")
 			}else{
 				Ele.CommandOrders[newOrder.Floor]=true
-				fmt.Println("Legger til en commandordre")
 			}
 		}
 	}
@@ -441,7 +451,7 @@ func StatusPrint(){
 	statusTimer:= time.NewTimer(1 * time.Second)
 	statusTimer.Stop()
 	for{
-		statusTimer.Reset(10 * time.Second)
+		statusTimer.Reset(3 * time.Second)
 		<-statusTimer.C
 		fmt.Println("\n\t\tELEVATOR STATUS")
 		for IP, _ := range elevators{
