@@ -174,7 +174,7 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 			OrderCompleted(message.Order.Floor, message.TargetIP)
 		case "statusUpdate":
 			fmt.Println("Her får vi statusUpdate")
-			if message.TargetIP != myIP {
+			if message.SenderIP != myIP {
 				_, exist := elevators[message.TargetIP]
 				if !exist{
 					newElev := Elevator{true,true,1,0,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
