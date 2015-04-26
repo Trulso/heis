@@ -41,7 +41,7 @@ func OrderButtonHandler(upOrderChan chan int, downOrderChan chan int, commandOrd
 		select {
 		case floor := <-upOrderChan:
 			newOrder := Order{UP, floor}
-			i := addInternalOrder(newOrder,UP)
+			i := addInternalOrder(newOrder)
 			switch i {
 			case "empty":
 				orderInEmptyQueueChan <- floor
@@ -51,7 +51,7 @@ func OrderButtonHandler(upOrderChan chan int, downOrderChan chan int, commandOrd
 
 		case floor := <-downOrderChan:
 			newOrder := Order{DOWN, floor}
-			i:=addInternalOrder(newOrder,DOWN)
+			i:=addInternalOrder(newOrder)
 			switch i {
 			case "empty":
 				orderInEmptyQueueChan <- floor
@@ -61,7 +61,7 @@ func OrderButtonHandler(upOrderChan chan int, downOrderChan chan int, commandOrd
 
 		case floor := <-commandOrderChan:	
 			newOrder := Order{COMMAND, floor}
-			i:=addInternalOrder(newOrder,COMMAND)
+			i:=addInternalOrder(newOrder)
 			switch i {
 			case "empty":
 				orderInEmptyQueueChan <- floor
@@ -311,7 +311,7 @@ func isIdenticalOrder(newOrder Order) bool {
 				return true
 			}
 		case COMMAND:
-			if elevator.CommandOrders[newOrder.Floor] {
+			if elevators[myIP].CommandOrders[newOrder.Floor] {
 				return true
 			}
 		}
@@ -353,24 +353,24 @@ func costFunction(elevator *Elevator, newOrder Order,ip string) int {
 	return cost	
 } //Ikke laget ennå.
 
-func addInternalOrder(newOrder Order,b_type int) string{
+func addInternalOrder(newOrder Order) string{
 	var cheapestElevator string
 
 	if isIdenticalOrder(newOrder) {
+		fmt.Printf("Kommer vi hit?\n")
 		return ""
 	}
-
-	if b_type != COMMAND{
-		cheapestElevator = findCheapestElevator(newOrder)
-	}else{
+	if newOrder.Type == COMMAND {
 		cheapestElevator = myIP
+	}else{
+		cheapestElevator = findCheapestElevator(newOrder)
 	}
+	fmt.Printf("Cheapest Elevator is: %s\n", cheapestElevator)
 	firstOrder:= isQueueEmpty(myIP)
 	for IP, Ele := range elevators {
 		if IP == cheapestElevator {
 			if newOrder.Type == UP {
 				Ele.UpOrders[newOrder.Floor]=true
-	
 			}else if newOrder.Type == DOWN {
 				Ele.DownOrders[newOrder.Floor]=true
 			}else{
