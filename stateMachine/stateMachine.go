@@ -26,19 +26,19 @@ func Init(floorReachedChan chan int, orderOnSameFloorChan chan int, orderInEmpty
 		case floor := <-floorReachedChan:
 			if floor == -1 {
 				queue.LeftFloor("")
-			}
-			fmt.Printf("Vi ankom etasje %d\n", floor)
-			io.SetFloorIndicator(floor)
-
-			switch state {
-			case MOVING:
-				if queue.ShouldStop(floor) {
-					io.SetMotorDir(0)
-					doorTimer.Reset(3 * time.Second)
-					io.SetDoorLamp(1)
-					state = DOOR_OPEN
-					time.Sleep(time.Millisecond)
-					queue.OrderCompleted(floor, "self")
+			}else{
+				fmt.Printf("Vi ankom etasje %d\n", floor)
+				io.SetFloorIndicator(floor)
+				switch state {
+				case MOVING:
+					if queue.ShouldStop(floor) {
+						io.SetMotorDir(0)
+						doorTimer.Reset(3 * time.Second)
+						io.SetDoorLamp(1)
+						state = DOOR_OPEN
+						time.Sleep(time.Millisecond)
+						queue.OrderCompleted(floor, "self")
+					}
 				}
 			}
 		case floor := <-orderOnSameFloorChan:
