@@ -67,7 +67,6 @@ func Init(floorReachedChan chan int, orderOnSameFloorChan chan int, orderInEmpty
 				}
 			}
 		case <-doorTimer.C:
-			fmt.Println("Tiden er gott ut")
 			switch state {
 			case DOOR_OPEN:
 				io.SetDoorLamp(0)

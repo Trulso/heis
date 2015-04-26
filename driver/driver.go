@@ -57,7 +57,7 @@ func SetFloorIndicator(floor int) {
     }else {
         Io_clear_bit(LIGHT_FLOOR_IND2)
     }
-}//Ferdig
+}
 
 func SetButtonLed(floor int,button int){
 	if(floor<=N_FLOORS){
@@ -87,7 +87,7 @@ func SetButtonLed(floor int,button int){
 			Io_set_bit(LIGHT_DOWN4)
 		}
 	}
-}//Ferdig
+}
 
 func ClearButtonLed(floor int,button int){
 	if button == COMMAND {
@@ -115,7 +115,7 @@ func ClearButtonLed(floor int,button int){
 			Io_clear_bit(LIGHT_DOWN4)
 		}
 	}
-}//Ferdig
+}
 
 func SetDoorLamp(value int) {
 	if (value) > 0 {
@@ -123,7 +123,7 @@ func SetDoorLamp(value int) {
 	}else{
         Io_clear_bit(LIGHT_DOOR_OPEN)
     }	
-}//Ferdig
+}
 
 func SetStopLamp(value int) {
 	if (value) > 0{
@@ -153,7 +153,7 @@ func SetMotorDir(dir int) {
     	Io_set_bit(MOTORDIR)
     	Io_write_analog(MOTOR, 2800)
     }
-}//Ferdig
+}
 
 func OrderButtonPolling(commandOrdersChan chan int,upOrdersChan chan int, downOrdersChan chan int){
 	fmt.Println("Nå starter pollinga av buttons")
@@ -178,7 +178,7 @@ func OrderButtonPolling(commandOrdersChan chan int,upOrdersChan chan int, downOr
 		}
 		time.Sleep(10*time.Millisecond)		
 	}
-}//Ferdig
+}
 
 func FloorSensorPolling(floorSensorChan chan int){
 	fmt.Println("Nå starter pollinga av etg")
@@ -197,7 +197,7 @@ func FloorSensorPolling(floorSensorChan chan int){
 		}
 		time.Sleep(10*time.Millisecond)
 	}
-}//Ferdig
+}
 
 func GetFloorSensorSignal() int {
 	if Io_read_bit(SENSOR_FLOOR1) == 1{

@@ -325,8 +325,7 @@ func findCheapestElevator(newOrder Order) string {
 	for IP, elevator := range elevators {
 		if elevators[IP].Active == true {
 			fmt.Println(IP)
-			cost := costFunction(elevator, newOrder,IP)
-			fmt.Println ("The cost is ---------------------------------------->",cost)
+			cost := costFunction(elevator, newOrder)
 			if cost < minCost {
 				minCost = cost
 				cheapestElevator = IP
@@ -340,18 +339,25 @@ func findCheapestElevator(newOrder Order) string {
 	return cheapestElevator
 }
 
-func costFunction(elevator *Elevator, newOrder Order,ip string) int {
+func costFunction(elevator *Elevator, newOrder Order) int {
 	
 	cost := int(math.Abs(float64(newOrder.Floor-elevator.LastPassedFloor)))
+	
 	if elevator.Direction == UP && newOrder.Floor<elevator.LastPassedFloor{
 		cost += 5
+
 	}else if elevator.Direction == DOWN && newOrder.Floor>elevator.LastPassedFloor{
 		cost += 5
+
 	}else if elevator.LastPassedFloor == newOrder.Floor{
 		cost +=4
+	
+	}
+	if newOrder.Floor == elevator.LastPassedFloor && elevator.InFloor == true {
+		cost = 0
 	}
 	return cost	
-} //Ikke laget ennå.
+} 
 
 func addInternalOrder(newOrder Order) string{
 	var cheapestElevator string
