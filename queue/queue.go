@@ -184,6 +184,7 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 			}
 			fmt.Println("Her har vi oppdatert status")
 		case "leftFloor":
+			fmt.Println("Heis %s har forlatt etasjen", message.TargetIP)
 			LeftFloor(message.TargetIP)
 		}
 		printElevator(myIP)
