@@ -150,8 +150,10 @@ func NextDirection() int {
 func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan int, orderInEmptyQueueChan chan int){
 	for{
 		message := <-incommingMsgChan
+		fmt.Println("Vi har fått en message")
 		switch message.MessageType{
 		case "newOrder":
+			fmt.Println("Her får vi newOrder")
 			i := addExternalOrder(message.TargetIP, message.Order)		
 			switch i {
 			case "empty":
@@ -160,12 +162,16 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 				orderOnSameFloorChan <- message.Order.Floor
 			}
 		case "newDirection":
+			fmt.Println("Her får vi newDirection")
 			elevators[message.TargetIP].Direction = message.Order.Type
 		case "newFloor":
+			fmt.Println("Her får vi newFloor")
 			elevators[message.TargetIP].LastPassedFloor = message.Order.Floor
 		case "completedOrder":
+			fmt.Println("Her får vi statusUpdate")
 			OrderCompleted(message.Order.Floor, message.SenderIP)
 		case "statusUpdate":
+			fmt.Println("Her får vi statusUpdate")
 			if message.TargetIP == myIP {
 				for floor:= 0; floor<N_FLOORS;floor++{
 					elevators[myIP].UpOrders[floor]      = elevators[myIP].UpOrders[floor] || message.Elevator.UpOrders[floor]
@@ -184,13 +190,15 @@ func HeartbeatReceiver(newElevatorChan chan string, deadElevatorChan chan string
 		select{
 		case IP := <-newElevatorChan:
 			fmt.Printf("Det er dukket opp en ny heis me IP: %s\n", IP)
-			fmt.Println(elevators)
 			_, exist := elevators[IP]
 			if exist{
 				elevators[IP].Active = true
 			}else{
 				newElev := Elevator{true,1,0,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
 				elevators[IP]=&newElev
+			}
+			for _,elev := range elevators{
+				fmt.Println(elev)
 			}
 			messageTransmitter("statusUpdate", myIP,Order{-1,-1})
 			messageTransmitter("statusUpdate", IP,Order{-1,-1})
@@ -338,6 +346,7 @@ func addExternalOrder(taskedElevator string, newOrder Order) string {
 }
 
 func messageTransmitter(msgType string, targetIP string, order Order){ //newOrder, floorUpdate, completedOrder, directionUpdate, 
+	fmt.Printf("Nå lager vi en %s type message\n", msgType)
 	newMessage := Message{
 		msgType,
 		myIP,
