@@ -166,7 +166,7 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 			//fmt.Println("Her får vi newDirection")
 			elevators[message.TargetIP].Direction = message.Order.Type
 		case "newFloor":
-			//fmt.Println("Her får vi newFloor")
+			fmt.Println("Her får vi newFloor")
 			elevators[message.TargetIP].LastPassedFloor = message.Order.Floor
 			elevators[message.TargetIP].InFloor = true
 		case "completedOrder":
@@ -177,20 +177,22 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 			if message.TargetIP != myIP {
 				_, exist := elevators[message.TargetIP]
 				if !exist{
-					time.Sleep(200*time.Millisecond)
+					time.Sleep(100*time.Millisecond)
 				}
-				fmt.Println("Her er vi inne i ifen")
+				fmt.Println("********************************************************** Her er vi inne i ifen")
 				elevators[message.TargetIP].InFloor = message.Elevator.InFloor
-				fmt.Println(elevators)
-				fmt.Println(message.Elevator.InFloor)
 				elevators[message.TargetIP].LastPassedFloor = message.Elevator.LastPassedFloor
 				elevators[message.TargetIP].Direction = message.Elevator.Direction
+
 			}
+
 			for floor:= 0; floor<N_FLOORS;floor++{
+
 					elevators[message.TargetIP].UpOrders[floor]      = elevators[message.TargetIP].UpOrders[floor] || message.Elevator.UpOrders[floor]
 					elevators[message.TargetIP].DownOrders[floor]    = elevators[message.TargetIP].DownOrders[floor] || message.Elevator.DownOrders[floor]
 					elevators[message.TargetIP].CommandOrders[floor] = elevators[message.TargetIP].CommandOrders[floor] || message.Elevator.CommandOrders[floor]
 			}
+
 		case "leftFloor":
 			fmt.Println("Heis %s har forlatt etasjen", message.TargetIP)
 			LeftFloor(message.TargetIP)
@@ -216,7 +218,12 @@ func HeartbeatReceiver(newElevatorChan chan string, deadElevatorChan chan string
 				fmt.Println(elev)
 			}
 			messageTransmitter("statusUpdate", myIP,Order{-1,-1})
+			fmt.Println("\nSENDER DENNE INFO OM MEG SELV")
+			printElevator(myIP)
 			messageTransmitter("statusUpdate", IP,Order{-1,-1})
+			fmt.Println("\nSENDER DENNE INFO OM DEN NYE HEISEN")
+			printElevator(IP)
+
 		case IP := <-deadElevatorChan:
 			elevators[IP].Active = false
 			fmt.Printf("Det er fjernet en heis med IP: %s\n", IP)
