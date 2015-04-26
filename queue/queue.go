@@ -290,7 +290,7 @@ func costFunction(elevator *Elevator, newOrder Order) int {
 		if difference > 0 {
 		}
 	}
-	return math.Int()
+	return rand.Int()
 } //Ikke laget ennå.
 
 
