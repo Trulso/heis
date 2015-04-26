@@ -20,6 +20,7 @@ type Order struct {
 }
 
 type Elevator struct {
+	Active bool
 	Direction int
 	LastPassedFloor int
 	UpOrders []bool
@@ -37,25 +38,22 @@ type Message struct {
 // var myIP = //SKaff lokalIPadresse
 var elevators = map[string]*Elevator{}
 var myIP = "IP1"
-var elev1 = Elevator{1,1,[]bool{false,false,false,false},[]bool{false,true,false,false},[]bool{false,false,false,false}}
-var elev2 = Elevator{1,2,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
-var elev3 = Elevator{1,2,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
-var elev4 = Elevator{1,2,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
+var elev1 = Elevator{true,1,1,[]bool{false,false,false,false},[]bool{false,true,false,false},[]bool{false,false,false,false}}
+var elev2 = Elevator{false,1,2,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
+var elev3 = Elevator{true,1,2,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
+var elev4 = Elevator{true,1,2,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
 
 
 func main(){
 
- 	elevators["IP1"] = &elev1
- 	elevators["IP2"] = &elev2
+ 	elevators["129.241.187.141"] = &elev1
+ 	elevators["129.241.187.143"] = &elev2
  	AddElevator(&elev3, "IP3")
  	AddElevator(&elev4, "IP4")
 
- 	for IP, elev := range elevators {
- 		fmt.Println(IP)
- 		fmt.Println(elev)
- 	}
-
-
+ 	printElevator("129.241.187.141")
+ 
+ 
 
  // 	fmt.Println("Oppordrer: ", elevators["IP1"].UpOrders)
  // 	fmt.Println("Nedordrer: ", elevators["IP1"].DownOrders)
@@ -78,9 +76,9 @@ func main(){
 	fmt.Print("Why deadlock\n")
 	doorTimer.Stop()
 	for{
-		doorTimer.Reset(5 * time.Second)
+		doorTimer.Reset(3 * time.Second)
 		<-doorTimer.C
-		fmt.Print("Det har gaatt fem sekund\n")
+		printElevator("129.241.187.141")
 		
 	}
 }
@@ -155,3 +153,23 @@ func ShouldStop(floor int) bool {
 func AddElevator(newElevator *Elevator, IP string) {
 	elevators[IP] = newElevator
 } //Ferdig
+
+func printElevator(elevatorIP string){
+	fmt.Printf("\nHeis IP: %s\n", elevatorIP)
+	fmt.Printf("Active: %t\n", elevators[elevatorIP].Active)
+	if elevators[elevatorIP].Direction == 1 {
+		fmt.Printf("Direction: UP\n")
+	}else if elevators[elevatorIP].Direction == -1 {
+		fmt.Printf("Direction: DOWN\n")
+	}else {
+		fmt.Printf("Direction: STOP\n")
+	}
+	fmt.Printf("Last Passed Floor: %d\n", elevators[elevatorIP].LastPassedFloor)
+
+	fmt.Printf("|  UP\t| DOWN\t|COMMAND|\n")
+	for floor := N_FLOORS-1; floor>-1; floor--{
+		fmt.Printf("| %t\t| %t\t| %t\t|\n",elevators[elevatorIP].UpOrders[floor],elevators[elevatorIP].DownOrders[floor],elevators[elevatorIP].CommandOrders[floor])
+	}
+	fmt.Printf("\n")
+
+}

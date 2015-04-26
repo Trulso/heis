@@ -25,7 +25,7 @@ var myIP string =network.GetIP()
 
 func Init() {
 	CurrentFloor:= driver.GetFloorSensorSignal()
-	elev := Elevator{true, 1,CurrentFloor,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
+	elev := Elevator{true,true, 1,CurrentFloor,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
 
 	elevators[myIP]=&elev
 }
@@ -120,9 +120,7 @@ func OrderCompleted(floor int, byElevator string) {
 
 func NextDirection() int {
 	fmt.Println("Vi skal finne neste retning")
-	fmt.Printf("COM:%v\n", elevators[myIP].CommandOrders)
-	fmt.Printf("DWN:%v\n", elevators[myIP].DownOrders)
-	fmt.Printf("UP: %v\n", elevators[myIP].UpOrders)
+	printElevator(myIP)
 	defer func() {
 		fmt.Println("Sender ny retning nå")
 		messageTransmitter("newDirection", myIP, Order{elevators[myIP].Direction, -1})
@@ -152,6 +150,7 @@ func NextDirection() int {
 func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan int, orderInEmptyQueueChan chan int){
 	for{
 		message := <-incommingMsgChan
+		printElevator(myIP)
 		switch message.MessageType{
 		case "newOrder":
 			fmt.Println("Her får vi newOrder")
@@ -183,7 +182,10 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 				elevators[message.TargetIP] = &message.Elevator
 			}
 			fmt.Println("Her har vi oppdatert status")
+		case "leftFloor":
+			LeftFloor(message.TargetIP)
 		}
+		printElevator(myIP)
 	}
 }
 
@@ -196,8 +198,9 @@ func HeartbeatReceiver(newElevatorChan chan string, deadElevatorChan chan string
 			if exist{
 				fmt.Println("denne heisen er ikke ny",IP)
 				elevators[IP].Active = true
+
 			}else{
-				newElev := Elevator{true,1,0,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
+				newElev := Elevator{true,true,1,0,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
 				elevators[IP]=&newElev
 			}
 			for _,elev := range elevators{
@@ -207,8 +210,15 @@ func HeartbeatReceiver(newElevatorChan chan string, deadElevatorChan chan string
 			messageTransmitter("statusUpdate", IP,Order{-1,-1})
 		case IP := <-deadElevatorChan:
 			elevators[IP].Active = false
-			fmt.Printf("Det er fjernet en heis me IP: %s\n", IP)
+			fmt.Printf("Det er fjernet en heis med IP: %s\n", IP)
 		}
+	}
+}
+
+func LeftFloor(IP string){
+	elevators[IP].InFloor = false
+	if IP == myIP{
+		messageTransmitter("leftFloor", myIP, Order{-1,-1})
 	}
 }
 
@@ -265,10 +275,7 @@ func isIdenticalOrder(newOrder Order) bool {
 	return false
 } //Ferdig
 
-
 func findCheapestElevator(newOrder Order) string {
-				
-
 	cheapestElevator := myIP
 	minCost := 9999
 	for IP, elevator := range elevators {
@@ -299,11 +306,8 @@ func costFunction(elevator *Elevator, newOrder Order,ip string) int {
 	}else if elevator.LastPassedFloor == newOrder.Floor{
 		cost +=4
 	}
-	return cost
-
-	
+	return cost	
 } //Ikke laget ennå.
-
 
 func addInternalOrder(newOrder Order,b_type int) string{
 	var cheapestElevator string
@@ -320,13 +324,13 @@ func addInternalOrder(newOrder Order,b_type int) string{
 	}else{
 		cheapestElevator = myIP
 	}
-	
 	firstOrder:= isQueueEmpty(myIP)
 	for IP, Ele := range elevators {
 		if IP == cheapestElevator {
 			if newOrder.Type == UP {
 				Ele.UpOrders[newOrder.Floor]=true
-				fmt.Println("Legger til en oppoverordre")
+	
+			fmt.Println("Legger til en oppoverordre")
 			}else if newOrder.Type == DOWN {
 				Ele.DownOrders[newOrder.Floor]=true
 				fmt.Println("Legger til en nedoverordre")
@@ -350,6 +354,8 @@ func addInternalOrder(newOrder Order,b_type int) string{
 
 func addExternalOrder(taskedElevator string, newOrder Order) string {
 	firstOrder:= isQueueEmpty(myIP)
+	fmt.Println("Heis før ny ekstern bestilling")
+	printElevator(taskedElevator)
 	if newOrder.Type == UP {
 		elevators[taskedElevator].UpOrders[newOrder.Floor]=true
 		driver.SetButtonLed(newOrder.Floor,newOrder.Type)
@@ -366,6 +372,8 @@ func addExternalOrder(taskedElevator string, newOrder Order) string {
 			return "empty"
 		}
 	}
+	fmt.Println("Heis etter ny ekstern bestilling")
+	printElevator(taskedElevator)
 	return ""
 }
 
@@ -381,3 +389,21 @@ func messageTransmitter(msgType string, targetIP string, order Order){ //newOrde
 	network.BroadcastMessage(newMessage)
 }
 
+func printElevator(elevatorIP string){
+	fmt.Printf("\n\nHeis IP: %s\n", elevatorIP)
+	//fmt.Printf("Active: %t\n", elevators[elevatorIP].Active)
+	if elevators[elevatorIP].Direction == 1 {
+		fmt.Printf("Direction: UP\n")
+	}else if elevators[elevatorIP].Direction == -1 {
+		fmt.Printf("Direction: DOWN\n")
+	}else {
+		fmt.Printf("Direction: STOP\n")
+	}
+	fmt.Printf("Last Passed Floor: %d\n", elevators[elevatorIP].LastPassedFloor)
+
+	fmt.Printf("|  UP\t| DOWN\t|COMMAND|\n")
+	for floor := N_FLOORS-1; floor>-1; floor--{
+		fmt.Printf("| %t\t| %t\t| %t\t|\n",elevators[elevatorIP].UpOrders[floor],elevators[elevatorIP].DownOrders[floor],elevators[elevatorIP].CommandOrders[floor])
+	}
+	fmt.Printf("\n\n")
+}

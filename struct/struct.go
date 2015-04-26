@@ -26,8 +26,10 @@ type Order struct {
 
 type Elevator struct {
 	Active			bool
+	InFloor			bool
 	Direction       int
 	LastPassedFloor int
+
 	UpOrders        []bool
 	DownOrders      []bool
 	CommandOrders   []bool

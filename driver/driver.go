@@ -192,6 +192,7 @@ func FloorSensorPolling(floorSensorChan chan int){
 				}
 			}else if pushed[floor-SENSOR_FLOOR1] {
 				pushed[floor-SENSOR_FLOOR1] = false
+				floorSensorChan <- -1
 			}
 		}
 		time.Sleep(10*time.Millisecond)
