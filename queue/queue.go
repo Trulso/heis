@@ -72,7 +72,7 @@ func OrderButtonHandler(upOrderChan chan int, downOrderChan chan int, commandOrd
 func ShouldStop(floor int) bool {
 	elevators[myIP].LastPassedFloor = floor
 	defer messageTransmitter("newFloor", myIP, Order{-1,floor}) 
-	defer fmt.Println("Sender newFloor nå")
+	//defer fmt.Println("Sender newFloor nå")
 	if elevators[myIP].CommandOrders[floor] {
 		return true
 	}
@@ -108,7 +108,7 @@ func OrderCompleted(floor int, byElevator string) {
 			elevator.CommandOrders[floor] = false
 		}
 	}
-	fmt.Println("KOmmer vi hit?")
+	//fmt.Println("KOmmer vi hit?")
 	driver.ClearButtonLed(floor,UP)
 	driver.ClearButtonLed(floor,DOWN)
 	if byElevator == "self" {
@@ -266,17 +266,23 @@ func isIdenticalOrder(newOrder Order) bool {
 
 
 func findCheapestElevator(newOrder Order) string {
+		
+	fmt.Println("BRUKER VI DENNE I HELETATT?")		
+
 	cheapestElevator := myIP
 	minCost := 9999
 	for IP, elevator := range elevators {
+		fmt.Println(IP)
 		cost := costFunction(elevator, newOrder)
 		if cost < minCost {
+			minCost = cost
 			cheapestElevator = IP
 		}
 		if cost == 0 {
 			break
 		}
 	}
+	fmt.Println(cheapestElevator)
 	return cheapestElevator
 }//Ferdig
 
@@ -290,7 +296,9 @@ func costFunction(elevator *Elevator, newOrder Order) int {
 		if difference > 0 {
 		}
 	}
-	return rand.Int()
+	temp := rand.Intn(9999)
+	//fmt.Println(temp)
+	return temp
 } //Ikke laget ennå.
 
 
@@ -302,12 +310,10 @@ func addInternalOrder(newOrder Order) string{
 		driver.SetButtonLed(newOrder.Floor,newOrder.Type)
 	}()
 
-	cheapestElevator := myIP//findCheapestElevator(newOrder)
+	cheapestElevator := findCheapestElevator(newOrder)
 	firstOrder:= isQueueEmpty(myIP)
 	for IP, Ele := range elevators {
-		fmt.Println("Er vi her inne da?")
 		if IP == cheapestElevator {
-			fmt.Println("Er vi her inne?")
 			if newOrder.Type == UP {
 				Ele.UpOrders[newOrder.Floor]=true
 				fmt.Println("Legger til en oppoverordre")
@@ -321,7 +327,7 @@ func addInternalOrder(newOrder Order) string{
 		}
 	}
 	messageTransmitter("newOrder", cheapestElevator,newOrder)
-	fmt.Println("Sender newOrder nå")
+	//fmt.Println("Sender newOrder nå")
 	if cheapestElevator == myIP{
 		if newOrder.Floor == elevators[myIP].LastPassedFloor {
 			return "sameFloor" 
@@ -354,7 +360,7 @@ func addExternalOrder(taskedElevator string, newOrder Order) string {
 }
 
 func messageTransmitter(msgType string, targetIP string, order Order){ //newOrder, floorUpdate, completedOrder, directionUpdate, 
-	fmt.Printf("Nå lager vi en %s type message\n", msgType)
+	//fmt.Printf("Nå lager vi en %s type message\n", msgType)
 	newMessage := Message{
 		msgType,
 		myIP,
