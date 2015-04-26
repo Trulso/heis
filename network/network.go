@@ -81,14 +81,12 @@ func MessageTransceiver(receiveChan chan Message) {
 		RxMessageBs := <-receive
 		fmt.Println("Vi har motatt en beskjed")
 		RxMessage := Message{}
-		//fmt.Println(string(RxMessageBs))
+		fmt.Println(string(RxMessageBs))
 		error := json.Unmarshal(RxMessageBs, &RxMessage)
 		if error != nil {
 			fmt.Println("error:", error)
 		}
-
 		if RxMessage.SenderIP != GetIP(){
-			fmt.Println("Sender beskjeden til queue")
 			receiveChan <- RxMessage
 		}
 	}

@@ -47,20 +47,15 @@ func main(){
 
  	elevators["IP1"] = &elev1
  	elevators["IP2"] = &elev2
- 	AddElevator(&elev3, "IP4")
- 	fmt.Println(elevators)
+ 	AddElevator(&elev3, "IP3")
+ 	AddElevator(&elev4, "IP4")
 
- 	send := Message{
-			MessageType: "acknowledge",
-			SenderIP: "Noe2",
-			TargetIP: "Noeaqnn",
-			Elevator: elev1,
-			Order: Order{
-					Type:  -1,
-					Floor: -1,
-					},
-			}
-	fmt.Println(send.Elevator)
+ 	for IP, elev := range elevators {
+ 		fmt.Println(IP)
+ 		fmt.Println(elev)
+ 	}
+
+
 
  // 	fmt.Println("Oppordrer: ", elevators["IP1"].UpOrders)
  // 	fmt.Println("Nedordrer: ", elevators["IP1"].DownOrders)

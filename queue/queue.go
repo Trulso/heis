@@ -5,6 +5,7 @@ import (
 	"../driver"
 	."../struct"
 	"../network"
+	"math/rand"
 )
 
 const (
@@ -57,7 +58,7 @@ func OrderButtonHandler(upOrderChan chan int, downOrderChan chan int, commandOrd
 		case floor := <-commandOrderChan:	
 			newOrder := Order{COMMAND, floor}
 			i:=addInternalOrder(newOrder)
-			fmt.Println("Command ordre")
+			fmt.Printf("Command ordre: %s\n", i)
 			switch i {
 			case "empty":
 				orderInEmptyQueueChan <- floor
@@ -107,6 +108,7 @@ func OrderCompleted(floor int, byElevator string) {
 			elevator.CommandOrders[floor] = false
 		}
 	}
+	fmt.Println("KOmmer vi hit?")
 	driver.ClearButtonLed(floor,UP)
 	driver.ClearButtonLed(floor,DOWN)
 	if byElevator == "self" {
@@ -150,7 +152,6 @@ func NextDirection() int {
 func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan int, orderInEmptyQueueChan chan int){
 	for{
 		message := <-incommingMsgChan
-		fmt.Println("Vi har fått en message")
 		switch message.MessageType{
 		case "newOrder":
 			fmt.Println("Her får vi newOrder")
@@ -168,26 +169,20 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 			fmt.Println("Her får vi newFloor")
 			elevators[message.TargetIP].LastPassedFloor = message.Order.Floor
 		case "completedOrder":
-			fmt.Println("Her får vi statusUpdate")
-			OrderCompleted(message.Order.Floor, message.SenderIP)
+			fmt.Println("Her får vi completedOrder")
+			OrderCompleted(message.Order.Floor, message.TargetIP)
 		case "statusUpdate":
 			fmt.Println("Her får vi statusUpdate")
-			fmt.Printf("COM:%v\n", elevators[myIP].CommandOrders)
-			fmt.Printf("DWN:%v\n", elevators[myIP].DownOrders)
-			fmt.Printf("UP: %v\n", elevators[myIP].UpOrders)
 			if message.TargetIP == myIP {
 				for floor:= 0; floor<N_FLOORS;floor++{
 					elevators[myIP].UpOrders[floor]      = elevators[myIP].UpOrders[floor] || message.Elevator.UpOrders[floor]
-					elevators[myIP].DownOrders[floor]  = elevators[myIP].DownOrders[floor] || message.Elevator.DownOrders[floor]
+					elevators[myIP].DownOrders[floor]    = elevators[myIP].DownOrders[floor] || message.Elevator.DownOrders[floor]
 					elevators[myIP].CommandOrders[floor] = elevators[myIP].CommandOrders[floor] || message.Elevator.CommandOrders[floor]
 				}	
 			}else {
 				elevators[message.TargetIP] = &message.Elevator
 			}
 			fmt.Println("Her har vi oppdatert status")
-			fmt.Printf("COM:%v\n", elevators[myIP].CommandOrders)
-			fmt.Printf("DWN:%v\n", elevators[myIP].DownOrders)
-			fmt.Printf("UP: %v\n", elevators[myIP].UpOrders)
 		}
 	}
 }
@@ -211,7 +206,7 @@ func HeartbeatReceiver(newElevatorChan chan string, deadElevatorChan chan string
 			messageTransmitter("statusUpdate", IP,Order{-1,-1})
 		case IP := <-deadElevatorChan:
 			elevators[IP].Active = false
-			fmt.Printf("Det er fjernet en ny heis me IP: %s\n", IP)
+			fmt.Printf("Det er fjernet en heis me IP: %s\n", IP)
 		}
 	}
 }
@@ -295,7 +290,7 @@ func costFunction(elevator *Elevator, newOrder Order) int {
 		if difference > 0 {
 		}
 	}
-	return 1
+	return math.Int()
 } //Ikke laget ennå.
 
 
@@ -307,16 +302,21 @@ func addInternalOrder(newOrder Order) string{
 		driver.SetButtonLed(newOrder.Floor,newOrder.Type)
 	}()
 
-	cheapestElevator := findCheapestElevator(newOrder)
+	cheapestElevator := myIP//findCheapestElevator(newOrder)
 	firstOrder:= isQueueEmpty(myIP)
 	for IP, Ele := range elevators {
-		if IP == cheapestElevator{
+		fmt.Println("Er vi her inne da?")
+		if IP == cheapestElevator {
+			fmt.Println("Er vi her inne?")
 			if newOrder.Type == UP {
 				Ele.UpOrders[newOrder.Floor]=true
+				fmt.Println("Legger til en oppoverordre")
 			}else if newOrder.Type == DOWN {
 				Ele.DownOrders[newOrder.Floor]=true
+				fmt.Println("Legger til en nedoverordre")
 			}else{
 				Ele.CommandOrders[newOrder.Floor]=true
+				fmt.Println("Legger til en commandordre")
 			}
 		}
 	}

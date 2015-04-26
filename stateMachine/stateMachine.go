@@ -34,6 +34,7 @@ func Init(floorReachedChan chan int, orderOnSameFloorChan chan int, orderInEmpty
 					doorTimer.Reset(3 * time.Second)
 					io.SetDoorLamp(1)
 					state = DOOR_OPEN
+					time.Sleep(time.Millisecond)
 					queue.OrderCompleted(floor, "self")
 				}
 			}
