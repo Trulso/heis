@@ -5,7 +5,7 @@ import (
 	"../driver"
 	."../struct"
 	"../network"
-	"math/rand"
+	//"math/rand"
 )
 
 const (
@@ -35,7 +35,7 @@ func OrderButtonHandler(upOrderChan chan int, downOrderChan chan int, commandOrd
 		select {
 		case floor := <-upOrderChan:
 			newOrder := Order{UP, floor}
-			i := addInternalOrder(newOrder)
+			i := addInternalOrder(newOrder,UP)
 			fmt.Println("Opp ordre")
 			switch i {
 			case "empty":
@@ -46,7 +46,7 @@ func OrderButtonHandler(upOrderChan chan int, downOrderChan chan int, commandOrd
 
 		case floor := <-downOrderChan:
 			newOrder := Order{DOWN, floor}
-			i:=addInternalOrder(newOrder)
+			i:=addInternalOrder(newOrder,DOWN)
 			fmt.Println("Ned ordre")
 			switch i {
 			case "empty":
@@ -57,7 +57,7 @@ func OrderButtonHandler(upOrderChan chan int, downOrderChan chan int, commandOrd
 
 		case floor := <-commandOrderChan:	
 			newOrder := Order{COMMAND, floor}
-			i:=addInternalOrder(newOrder)
+			i:=addInternalOrder(newOrder,COMMAND)
 			fmt.Printf("Command ordre: %s\n", i)
 			switch i {
 			case "empty":
@@ -266,14 +266,14 @@ func isIdenticalOrder(newOrder Order) bool {
 
 
 func findCheapestElevator(newOrder Order) string {
-		
-	fmt.Println("BRUKER VI DENNE I HELETATT?")		
+				
 
 	cheapestElevator := myIP
 	minCost := 9999
 	for IP, elevator := range elevators {
 		fmt.Println(IP)
-		cost := costFunction(elevator, newOrder)
+		cost := costFunction(elevator, newOrder,IP)
+		fmt.Println ("READ!!!!! :::::::::::::::",cost)
 		if cost < minCost {
 			minCost = cost
 			cheapestElevator = IP
@@ -286,23 +286,171 @@ func findCheapestElevator(newOrder Order) string {
 	return cheapestElevator
 }//Ferdig
 
-func costFunction(elevator *Elevator, newOrder Order) int {
+func costFunction(elevator *Elevator, newOrder Order,ip string) int {
+	
 	cost := 0
-	difference := elevator.LastPassedFloor - newOrder.Floor
-	if elevator.Direction == STOP {
-		cost = cost + 1*difference
-		return cost
-	} else if elevator.Direction == UP {
-		if difference > 0 {
+
+	var topOrder int
+
+	var lowestFloor int 
+
+	if isQueueEmpty(ip){
+		topOrder = newOrder.Floor
+	}
+	if isQueueEmpty(ip){
+		lowestFloor = newOrder.Floor
+	}
+
+	//for i := 0; i < 5; i++
+	fmt.Println("Elevator Direction: ",elevator.Direction)
+	fmt.Println("Order Type",newOrder.Type)
+	if elevator.LastPassedFloor < newOrder.Floor{
+
+
+		if elevator.Direction == UP || elevator.Direction == 0 {
+			fmt.Println("GÅR INN I ELEVATOR UP")
+			if newOrder.Type == UP {
+				fmt.Println("Elevator: UP .. Order: UP")
+				cost += newOrder.Floor - elevator.LastPassedFloor
+				for i := elevator.LastPassedFloor; i < newOrder.Floor; i++ {
+					if elevator.UpOrders[i] == true || elevator.CommandOrders[i] == true{
+						cost += 1
+					}
+				return cost	
+				}
+			}
+			if newOrder.Type == DOWN {
+				fmt.Println("Elevator: UP .. Order: Down")
+				if elevator.CommandOrders[newOrder.Floor] == true || elevator.UpOrders[newOrder.Floor] == true{
+					cost += newOrder.Floor - elevator.LastPassedFloor
+					for i := elevator.LastPassedFloor; i < newOrder.Floor; i++ {
+						if elevator.UpOrders[i] == true || elevator.CommandOrders[i] == true{
+							cost += 1
+						}
+					}	
+					return cost
+				}else{
+					
+					for i := elevator.LastPassedFloor; i < N_FLOORS; i++{
+						if elevator.UpOrders[i] == true || elevator.CommandOrders[i] == true  {
+							cost += 1
+							topOrder=i
+						}else if elevator.DownOrders[i] == true{
+							topOrder=i
+
+						}				
+					}
+
+					for i := topOrder; i >= newOrder.Floor; i-- {
+						if elevator.DownOrders[i] == true {
+							cost += 1
+						}
+
+					}
+					cost += topOrder - elevator.LastPassedFloor
+					cost += topOrder - newOrder.Floor
+					return cost
+				} 
+			}
+		}
+		if elevator.Direction == DOWN  || elevator.Direction == 0 { {
+	
+			fmt.Println("GÅR INN I ELEVATOR DOWN")
+			for i := elevator.LastPassedFloor; i >= 0; i-- {
+				if elevator.DownOrders[i] == true || elevator.CommandOrders[i] == true{
+					cost += 1
+					lowestFloor = i
+				}				
+			}
+			cost += elevator.LastPassedFloor - lowestFloor
+			}
+
+			if newOrder.Type == UP {
+				fmt.Println("Elevator: DOWN .. Order: UP")
+				for i := lowestFloor; i < newOrder.Floor; i++{
+					if elevator.UpOrders[i] == true {
+						cost += 1
+					}
+				}
+				cost += newOrder.Floor - lowestFloor
+				
+				return cost
+			}
+		
+			if newOrder.Type == DOWN {
+				fmt.Println("Elevator: DOWN .. Order: DOWN")
+				if elevator.CommandOrders[newOrder.Floor] == true{
+
+					for i := lowestFloor; i < newOrder.Floor; i++{
+						if elevator.UpOrders[i] == true {
+							cost += 1
+						}
+					cost += newOrder.Floor - lowestFloor
+					}
+					return cost
+
+				}
+				for i := 0; i < N_FLOORS; i++ {
+					if elevator.UpOrders[i] == true {
+						cost += 1
+						topOrder = i
+					}else if elevator.DownOrders[i] == true {
+						topOrder = i
+					}else{
+						topOrder = newOrder.Floor
+					}
+				}
+				fmt.Println("TOP ORDER :>-----",topOrder)
+				fmt.Println("LOWESST FLOOR :>----",lowestFloor)
+				cost += topOrder - lowestFloor
+				cost += topOrder - newOrder.Floor
+				return cost
+				// burda EGETNLIG sjekka down orders på veien ned igjen meeeeeeeeeeeeeeeeen.
+						
+			}
+			
 		}
 	}
-	temp := rand.Intn(9999)
-	//fmt.Println(temp)
-	return temp
+
+	/*if elevator.LastPassedFloor > newOrder.Floor{  // ONE COST TO BIND THEM ALL
+
+		fmt.Println("THE FLOOR IS UNDER")
+
+		if elevator.Direction == UP || elevator.Direction == 0 {
+			fmt.Println("GÅR INN I ELEVATOR UP")
+			if newOrder.Type == UP {
+				fmt.Println("hallo")		
+			}
+			if newOrder.Type == DOWN {
+				fmt.Println("Elevator: UP .. Order: Down")
+			}
+		}
+		if elevator.Direction == DOWN  || elevator.Direction == 0 { 
+	
+			fmt.Println("GÅR INN I ELEVATOR DOWN")
+
+
+			if newOrder.Type == UP {
+				fmt.Println("Elevator: DOWN .. Order: UP")
+		
+						
+			}
+		
+			if newOrder.Type == DOWN {
+				fmt.Println("Elevator: DOWN .. Order: DOWN")
+						
+			}
+			
+		}	
+	}
+fmt.Println("finner ikke kost!!!!!!!!!!!!!!!!!!!!!!!!!!")*/
+return 1
 } //Ikke laget ennå.
 
 
-func addInternalOrder(newOrder Order) string{
+func addInternalOrder(newOrder Order,b_type int) string{
+	var cheapestElevator string
+
 	if isIdenticalOrder(newOrder) {
 		return ""
 	}
@@ -310,7 +458,12 @@ func addInternalOrder(newOrder Order) string{
 		driver.SetButtonLed(newOrder.Floor,newOrder.Type)
 	}()
 
-	cheapestElevator := findCheapestElevator(newOrder)
+	if b_type != COMMAND{
+		cheapestElevator = findCheapestElevator(newOrder)
+	}else{
+		cheapestElevator = myIP
+	}
+	
 	firstOrder:= isQueueEmpty(myIP)
 	for IP, Ele := range elevators {
 		if IP == cheapestElevator {
