@@ -79,9 +79,9 @@ func MessageTransceiver(receiveChan chan Message) {
 
 	for {
 		RxMessageBs := <-receive
-		fmt.Println("Vi har motatt en beskjed")
+		//fmt.Println("Vi har motatt en beskjed")
 		RxMessage := Message{}
-		fmt.Println(string(RxMessageBs))
+		//fmt.Println(string(RxMessageBs))
 		error := json.Unmarshal(RxMessageBs, &RxMessage)
 		if error != nil {
 			fmt.Println("error:", error)
@@ -118,7 +118,7 @@ func sendStatus(toSend chan Message) {
 
 	for {
 		temp := <-toSend
-		fmt.Println("Dette sender vi: ",temp)
+		//fmt.Println("Dette sender vi: ",temp)
 		toSendBs, error := json.Marshal(temp)
 		if error != nil {
 			fmt.Println("error:", error)

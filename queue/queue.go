@@ -25,12 +25,15 @@ const (
 
 var elevators = map[string]*Elevator{}
 var myIP string =network.GetIP() 
+var lightUpdateChan = make(chan int)
 
 func Init() {
 	CurrentFloor:= driver.GetFloorSensorSignal()
 	elev := Elevator{true,true, 1,CurrentFloor,[]bool{false,false,false,false},[]bool{false,false,false,false},[]bool{false,false,false,false}}
 
 	elevators[myIP]=&elev
+
+	go lightUpdater()
 }
 
 func OrderButtonHandler(upOrderChan chan int, downOrderChan chan int, commandOrderChan chan int, orderOnSameFloorChan chan int, orderInEmptyQueueChan chan int){
@@ -105,6 +108,7 @@ func AddElevator(newElevator *Elevator, IP string) {
 } //Ferdig kanskje...
 
 func OrderCompleted(floor int, byElevator string) {
+	
 	for IP, elevator := range elevators {
 		elevator.UpOrders[floor] = false
 		elevator.DownOrders[floor] = false
@@ -112,14 +116,15 @@ func OrderCompleted(floor int, byElevator string) {
 			elevator.CommandOrders[floor] = false
 		}
 	}
-	driver.ClearButtonLed(floor,UP)
-	driver.ClearButtonLed(floor,DOWN)
+	//driver.ClearButtonLed(floor,UP)
+	//driver.ClearButtonLed(floor,DOWN)
 	if byElevator == "self" {
-		driver.ClearButtonLed(floor,COMMAND)
+		//driver.ClearButtonLed(floor,COMMAND)
 		messageTransmitter("completedOrder",  myIP , Order{-1,floor})
 		//fmt.Println("Sender fullført ordre nå")
 	}
-}
+	lightUpdateChan <-1
+}//LIGHTUPDATE
 
 func NextDirection() int {
 	//fmt.Println("Vi skal finne neste retning")
@@ -189,6 +194,8 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 	 				elevators[message.TargetIP].DownOrders[floor] = elevators[message.TargetIP].DownOrders[floor] || message.Elevator.DownOrders[floor]
 	 				elevators[message.TargetIP].CommandOrders[floor] = elevators[message.TargetIP].CommandOrders[floor] || message.Elevator.CommandOrders[floor]
 				}
+				orderInEmptyQueueChan<-1
+				lightUpdateChan <-1
 			}
 
 			fmt.Println("HER ER STATUSEN VI FÅR TILSENDT")
@@ -201,7 +208,7 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 			LeftFloor(message.TargetIP)
 		}
 	}
-}
+}//LIGHTCHAN
 
 func HeartbeatReceiver(newElevatorChan chan string, deadElevatorChan chan string){
 	for{
@@ -338,9 +345,9 @@ func addInternalOrder(newOrder Order,b_type int) string{
 	if isIdenticalOrder(newOrder) {
 		return ""
 	}
-	defer func() {
+	/*defer func() {
 		driver.SetButtonLed(newOrder.Floor,newOrder.Type)
-	}()
+	}()*/
 
 	if b_type != COMMAND{
 		cheapestElevator = findCheapestElevator(newOrder)
@@ -363,8 +370,9 @@ func addInternalOrder(newOrder Order,b_type int) string{
 			}
 		}
 	}
+
 	messageTransmitter("newOrder", cheapestElevator,newOrder)
-	//fmt.Println("Sender newOrder nå")
+	lightUpdateChan <-1
 	if cheapestElevator == myIP{
 		if newOrder.Floor == elevators[myIP].LastPassedFloor {
 			return "sameFloor" 
@@ -373,19 +381,20 @@ func addInternalOrder(newOrder Order,b_type int) string{
 		}
 	}
 	return ""
-}
+}//LIGHTUPDATE
 
 func addExternalOrder(taskedElevator string, newOrder Order) string {
 	firstOrder:= isQueueEmpty(myIP)
 	if newOrder.Type == UP {
 		elevators[taskedElevator].UpOrders[newOrder.Floor]=true
-		driver.SetButtonLed(newOrder.Floor,newOrder.Type)
+		//driver.SetButtonLed(newOrder.Floor,newOrder.Type)
 	}else if newOrder.Type == DOWN {
 		elevators[taskedElevator].DownOrders[newOrder.Floor]=true
-		driver.SetButtonLed(newOrder.Floor,newOrder.Type)
+		//driver.SetButtonLed(newOrder.Floor,newOrder.Type)
 	}else{
 		elevators[taskedElevator].CommandOrders[newOrder.Floor]=true
 	}
+	lightUpdateChan <-1
 	if taskedElevator == myIP {
 		if newOrder.Floor == elevators[myIP].LastPassedFloor {
 			return "sameFloor" 
@@ -394,7 +403,7 @@ func addExternalOrder(taskedElevator string, newOrder Order) string {
 		}
 	}
 	return ""
-}
+}//LIGHTUPDATE
 
 func messageTransmitter(msgType string, targetIP string, order Order){ //newOrder, floorUpdate, completedOrder, directionUpdate, 
 	//fmt.Printf("Nå lager vi en %s type message\n", msgType)
@@ -441,5 +450,47 @@ func StatusPrint(){
 			printElevator(IP)
 		}
 	}
+}
 
+func lightUpdater(){
+	commandLights := make([]bool, N_FLOORS)
+	upLights := make([]bool,N_FLOORS)
+	downLights := make([]bool,N_FLOORS)
+	for{
+		<-lightUpdateChan
+		for floor:=0; floor <N_FLOORS; floor++{
+			for IP,_ := range elevators {
+				if elevators[myIP].CommandOrders[floor]{
+					commandLights[floor] = true
+				}
+				if elevators[IP].UpOrders[floor]{
+					upLights[floor] = true
+				}
+				if elevators[IP].DownOrders[floor]{
+					downLights[floor] = true		
+				}
+			}
+		}
+		for floor:=0;floor<N_FLOORS;floor++{
+			if floor > 0 && downLights[floor] {
+				driver.SetButtonLed(floor,DOWN)
+			}else{
+				driver.ClearButtonLed(floor,DOWN)
+			}
+			if floor < N_FLOORS-1 && upLights[floor] {
+				driver.SetButtonLed(floor,UP)
+			}else{
+				driver.ClearButtonLed(floor,UP)
+			}
+			if commandLights[floor] {
+				driver.SetButtonLed(floor,COMMAND)
+			}else{
+				driver.ClearButtonLed(floor,COMMAND)
+			}
+			downLights[floor]=false
+			commandLights[floor]=false
+			upLights[floor]=false
+		}
+
+	}
 }
