@@ -167,6 +167,7 @@ func MessageReceiver(incommingMsgChan chan Message, orderOnSameFloorChan chan in
 		case "newFloor":
 			fmt.Println("Her får vi newFloor")
 			elevators[message.TargetIP].LastPassedFloor = message.Order.Floor
+			elevators[message.TargetIP].InFloor = true
 		case "completedOrder":
 			fmt.Println("Her får vi completedOrder")
 			OrderCompleted(message.Order.Floor, message.TargetIP)
@@ -216,9 +217,11 @@ func HeartbeatReceiver(newElevatorChan chan string, deadElevatorChan chan string
 }
 
 func LeftFloor(IP string){
-	elevators[IP].InFloor = false
-	if IP == myIP{
+	if IP != ""{
+		elevators[IP].InFloor = false	
+	}else{
 		messageTransmitter("leftFloor", myIP, Order{-1,-1})
+		elevators[myIP].InFloor = false
 	}
 }
 

@@ -24,6 +24,9 @@ func Init(floorReachedChan chan int, orderOnSameFloorChan chan int, orderInEmpty
 	for {
 		select {
 		case floor := <-floorReachedChan:
+			if floor == -1 {
+				queue.LeftFloor("")
+			}
 			fmt.Printf("Vi ankom etasje %d\n", floor)
 			io.SetFloorIndicator(floor)
 
