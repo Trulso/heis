@@ -8,6 +8,8 @@ import (
 	. "./struct"
 	"fmt"
 )
+func test()
+{}
 
 func main() {
 	fmt.Println("Da starter vi.")
